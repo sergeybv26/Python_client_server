@@ -1,6 +1,7 @@
 """
 Настройки проекта. Константы
 """
+import logging
 
 DEFAULT_PORT = 7777
 DEFAULT_IP_ADDRESS = '127.0.0.1'
@@ -25,4 +26,7 @@ RESPONSE = 'response'
 ERROR = 'error'
 TIME = 'time'
 USER = 'user'
+
+# Константы логгирования
+LOGGING_LEVEL = logging.DEBUG
 

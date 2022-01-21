@@ -11,10 +11,12 @@ import log.server_log_config
 from common.utils import get_tcp_parameters, get_message, send_message
 from common.variables import ACTION, PRESENCE, TIME, USER, ACCOUNT_NAME, RESPONSE, ERROR, MAX_CONNECTIONS
 from errors import IncorrectDataReceivedError
+from decos import log
 
 SERVER_LOGGER = logging.getLogger('server')
 
 
+@log
 def process_client_message(message):
     """
     Обрабатывает сообщения от клиентов

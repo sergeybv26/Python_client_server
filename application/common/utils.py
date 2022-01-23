@@ -46,9 +46,10 @@ def get_message(sock):
 
 
 @log
-def get_tcp_parameters(is_server=False):
+def get_parameters(is_server=False):
     """
-    Получает параметры IP адреса и порта из командной строки
+    Получает параметры IP адреса и порта из командной строки.
+    Получает параметр клиента из командной строки
     :param is_server: Признак, указывающий, что это настройки для сервера
     :return: возвращает параметры
     """
@@ -59,6 +60,7 @@ def get_tcp_parameters(is_server=False):
     else:
         parser_param.add_argument('-a', default='')
     parser_param.add_argument('-p', default=variables.DEFAULT_PORT)
+    parser_param.add_argument('-m', default=variables.CLIENT_DEFAULT_MODE)
 
     parameters = parser_param.parse_args(sys.argv[1:])
 

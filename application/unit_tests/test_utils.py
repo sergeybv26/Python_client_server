@@ -7,7 +7,7 @@ import sys
 import unittest
 from unittest.mock import patch
 
-from common.utils import send_message, get_message, get_tcp_parameters
+from common.utils import send_message, get_message, get_parameters
 from common.variables import ENCODING, RESPONSE, ERROR, TIME, ACTION, PRESENCE, USER, ACCOUNT_NAME, DEFAULT_PORT, \
     DEFAULT_IP_ADDRESS
 
@@ -107,7 +107,7 @@ class TestUtils(unittest.TestCase):
         :return:
         """
 
-        param = get_tcp_parameters()
+        param = get_parameters()
 
         self.assertEqual(param.a, '192.168.0.1')
 
@@ -118,7 +118,7 @@ class TestUtils(unittest.TestCase):
         :return:
         """
 
-        param = get_tcp_parameters()
+        param = get_parameters()
 
         self.assertEqual(param.p, '8080')
 
@@ -128,7 +128,7 @@ class TestUtils(unittest.TestCase):
         :return:
         """
 
-        param = get_tcp_parameters()
+        param = get_parameters()
         self.assertEqual(param.p, DEFAULT_PORT)
 
     def test_get_tcp_parameters_default_address(self):
@@ -137,7 +137,7 @@ class TestUtils(unittest.TestCase):
         :return:
         """
 
-        param = get_tcp_parameters()
+        param = get_parameters()
         self.assertEqual(param.a, DEFAULT_IP_ADDRESS)
 
     def test_get_tcp_parameters_default_server_address(self):
@@ -146,7 +146,7 @@ class TestUtils(unittest.TestCase):
         :return:
         """
 
-        param = get_tcp_parameters(True)
+        param = get_parameters(True)
         self.assertEqual(param.a, '')
 
     def test_get_tcp_parameters_returned_type(self):
@@ -155,7 +155,7 @@ class TestUtils(unittest.TestCase):
         :return:
         """
 
-        self.assertIsInstance(get_tcp_parameters(), argparse.Namespace)
+        self.assertIsInstance(get_parameters(), argparse.Namespace)
 
 
 if __name__ == '__main__':

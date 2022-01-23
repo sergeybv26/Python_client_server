@@ -6,8 +6,11 @@ import json
 import sys
 
 from common import variables
+sys.path.append('../')
+from decos import log
 
 
+@log
 def send_message(sock, message):
     """
     Выполняет кодирование и отправку сообщения
@@ -23,6 +26,7 @@ def send_message(sock, message):
     sock.send(encoded_message)
 
 
+@log
 def get_message(sock):
     """
     Принимает и декодирует сообщение. Если принят не словарь - выдает ошибку
@@ -41,6 +45,7 @@ def get_message(sock):
     raise ValueError
 
 
+@log
 def get_tcp_parameters(is_server=False):
     """
     Получает параметры IP адреса и порта из командной строки

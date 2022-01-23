@@ -11,10 +11,12 @@ import log.client_log_config
 from common.utils import get_tcp_parameters, send_message, get_message
 from common.variables import ACTION, PRESENCE, TIME, USER, ACCOUNT_NAME, RESPONSE, ERROR
 from errors import ReqFieldMissingError
+from decos import log
 
 CLIENT_LOGGER = logging.getLogger('client')
 
 
+@log
 def create_presence(account_name='Guest'):
     """
     Формирует запрос на сервер о присутствии клиента
@@ -34,6 +36,7 @@ def create_presence(account_name='Guest'):
     return request
 
 
+@log
 def process_answ(message):
     """
     Разбирает ответ от сервера

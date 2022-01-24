@@ -46,7 +46,7 @@ def process_client_message(message, messages_list, client):
             RESPONSE: 400,
             ERROR: 'Bad request'
         })
-        return
+        raise IncorrectDataReceivedError
 
 
 def main():
@@ -102,7 +102,7 @@ def main():
                 try:
                     process_client_message(get_message(client_with_msg), messages, client_with_msg)
                     SERVER_LOGGER.debug(f'Обработано сообщение клиента {client_with_msg.getpeername()}')
-                except:
+                except IncorrectDataReceivedError:
                     SERVER_LOGGER.info(f'Клиент {client_with_msg.getpeername()} отключился от сервера')
                     clients.remove(client_with_msg)
 
@@ -118,7 +118,7 @@ def main():
                 try:
                     send_message(waiting_client, message)
                     SERVER_LOGGER.debug(f'Отправлено сообщение {message} клиенту {waiting_client}')
-                except:
+                except IncorrectDataReceivedError:
                     SERVER_LOGGER.info(f'Клиент {waiting_client.getpeername()} отключился от сервера.')
                     waiting_client.close()
                     clients.remove(waiting_client)

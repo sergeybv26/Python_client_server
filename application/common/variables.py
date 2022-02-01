@@ -11,6 +11,7 @@ MAX_CONNECTIONS = 5
 MAX_PACKAGE_LENGTH = 1024
 
 ENCODING = 'utf-8'
+CLIENT_DEFAULT_MODE = 'listen'
 
 # Константы протокола JIM
 ACCOUNT_NAME = 'account_name'
@@ -26,6 +27,10 @@ RESPONSE = 'response'
 ERROR = 'error'
 TIME = 'time'
 USER = 'user'
+MESSAGE = 'msg'
+SENDER = 'from'
+RECEIVER = 'to'
+MESSAGE_TEXT = 'message'
 
 # Константы логгирования
 LOGGING_LEVEL = logging.DEBUG

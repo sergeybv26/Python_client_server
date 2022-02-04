@@ -4,8 +4,8 @@
 import subprocess
 
 PROCESS = []
-CLIENT_SEND_QNT = 2
-CLIENT_READ_QNT = 5
+CLIENT_QNT = 3
+
 
 while True:
     ACTION = input('Выберите действие: q - выход, s - запустить сервер и клиенты, '
@@ -18,12 +18,10 @@ while True:
         break
     elif ACTION == 's':
         PROCESS.append(subprocess.Popen('python server.py', creationflags=subprocess.CREATE_NEW_CONSOLE))
-        for _ in range(CLIENT_SEND_QNT):
-            PROCESS.append(subprocess.Popen('python client.py -m send',
+        for i in range(1, CLIENT_QNT + 1):
+            PROCESS.append(subprocess.Popen(f'python client.py -n client-{i}',
                                             creationflags=subprocess.CREATE_NEW_CONSOLE))
-        for _ in range(CLIENT_READ_QNT):
-            PROCESS.append(subprocess.Popen('python client.py -m listen',
-                                            creationflags=subprocess.CREATE_NEW_CONSOLE))
+
     elif ACTION == 'x':
         while PROCESS:
             VICTIM = PROCESS.pop()

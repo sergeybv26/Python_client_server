@@ -55,6 +55,7 @@ def process_client_message(message, messages_list, client, clients, names):
     elif ACTION in message and ACCOUNT_NAME in message and message[ACTION] == QUIT and \
             message[ACCOUNT_NAME] in names.keys():
         clients.remove(names[message[ACCOUNT_NAME]])
+        SERVER_LOGGER.debug(f'Соединение с клиентом {message[ACCOUNT_NAME]} закрывается по инициативе клиента')
         names[message[ACCOUNT_NAME]].close()
         del names[message[ACCOUNT_NAME]]
         return

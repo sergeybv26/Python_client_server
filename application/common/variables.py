@@ -35,3 +35,9 @@ MESSAGE_TEXT = 'message'
 # Константы логгирования
 LOGGING_LEVEL = logging.DEBUG
 
+# Константы ответов сервера
+
+RESPONSE_400 = {
+            RESPONSE: 400,
+            ERROR: 'Bad request'
+        }

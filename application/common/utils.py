@@ -59,8 +59,8 @@ def get_parameters(is_server=False):
         parser_param.add_argument('-a', default=variables.DEFAULT_IP_ADDRESS)
     else:
         parser_param.add_argument('-a', default='')
-    parser_param.add_argument('-p', default=variables.DEFAULT_PORT)
-    parser_param.add_argument('-m', default=variables.CLIENT_DEFAULT_MODE)
+    parser_param.add_argument('-p', default=variables.DEFAULT_PORT, type=int, nargs='?')
+    parser_param.add_argument('-n', '--name', default=None, nargs='?')
 
     parameters = parser_param.parse_args(sys.argv[1:])
 

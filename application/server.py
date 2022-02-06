@@ -150,7 +150,7 @@ def main():
             for client_with_msg in recv_data_list:
                 try:
                     process_client_message(get_message(client_with_msg), messages, client_with_msg, clients, names)
-                    SERVER_LOGGER.debug(f'Обработано сообщение клиента {client_with_msg.getpeername()}')
+                    # SERVER_LOGGER.debug(f'Обработано сообщение клиента {client_with_msg.getpeername()}')
                 except IncorrectDataReceivedError:
                     SERVER_LOGGER.info(f'Клиент {client_with_msg.getpeername()} отключился от сервера')
                     clients.remove(client_with_msg)

@@ -6,7 +6,7 @@
 """
 from tabulate import tabulate
 
-from PyQT_lesson1.task1_2 import host_range_ping
+from task1_2 import host_range_ping
 
 
 def host_range_ping_tab():

@@ -3,7 +3,7 @@
 Меняться должен только последний октет каждого адреса.
 По результатам проверки должно выводиться соответствующее сообщение.
 """
-from PyQT_lesson1.task1_1 import check_is_ip, host_ping
+from task1_1 import check_is_ip, host_ping
 
 
 def host_range_ping(get_list=False):

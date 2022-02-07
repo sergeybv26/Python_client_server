@@ -30,7 +30,7 @@ def host_ping(hosts_list, get_list=False):
     Проверяет доступность сетевых узлов и выводит результат
     :param hosts_list: список сетевых узлов
     :param get_list: флаг - нужно ли возвращать список сетевых узлов с результатом теста
-    :return: список словарей, если get_list = True
+    :return: словарь, если get_list = True
     """
 
     result = {'Доступные узлы': '', 'Недоступные узлы': ''}
@@ -43,7 +43,7 @@ def host_ping(hosts_list, get_list=False):
         except Exception as err:
             print(f'{test_host} - {err}. Принимается, что {test_host} является именем хоста')
             host = test_host
-        args = ['ping', ping_param, '2', str(host)]
+        args = ['ping', ping_param, '2', '-w', '1000', str(host)]
 
         process = Popen(args, stdout=PIPE)
         processes.append((host, process))

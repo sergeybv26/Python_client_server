@@ -7,7 +7,7 @@ import unittest
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 
-from client import create_presence, process_answ
+from client_func import create_presence, process_answ
 from common.variables import TIME, ACTION, PRESENCE, USER, ACCOUNT_NAME, RESPONSE, ERROR
 
 

@@ -6,7 +6,7 @@ import sys
 import unittest
 sys.path.append(os.path.join(os.getcwd(), '..'))
 from common.variables import RESPONSE, ERROR, ACTION, PRESENCE, TIME, USER, ACCOUNT_NAME
-from server import process_client_message
+from server_func import process_client_message
 
 
 class TestServer(unittest.TestCase):

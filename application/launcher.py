@@ -17,7 +17,7 @@ while True:
             VICTIM.kill()
         break
     elif ACTION == 's':
-        PROCESS.append(subprocess.Popen('python server.py', creationflags=subprocess.CREATE_NEW_CONSOLE))
+        # PROCESS.append(subprocess.Popen('python server_func.py', creationflags=subprocess.CREATE_NEW_CONSOLE))
         for i in range(1, CLIENT_QNT + 1):
             PROCESS.append(subprocess.Popen(f'python client.py -n client-{i}',
                                             creationflags=subprocess.CREATE_NEW_CONSOLE))

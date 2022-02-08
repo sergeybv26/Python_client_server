@@ -4,12 +4,14 @@
 import json
 import logging
 import sys
+import threading
 import time
 from socket import socket, AF_INET, SOCK_STREAM
 
 from common.utils import get_parameters, get_message, send_message
-from common.variables import ACTION, QUIT, TIME, ACCOUNT_NAME, SENDER, MESSAGE, RECEIVER, MESSAGE_TEXT, PRESENCE, USER
-from errors import IncorrectDataReceivedError
+from common.variables import ACTION, QUIT, TIME, ACCOUNT_NAME, SENDER, MESSAGE, RECEIVER, MESSAGE_TEXT, PRESENCE, USER, \
+    RESPONSE, ERROR
+from errors import IncorrectDataReceivedError, ReqFieldMissingError, ServerError
 
 
 class Client:
@@ -25,6 +27,7 @@ class Client:
         self.request = None
         self.message_dict = None
         self.command = None
+        self.answer = None
 
     def check_client_parameters(self):
         """
@@ -33,8 +36,8 @@ class Client:
         """
         if not 1023 < self.server_port < 65536:
             self.logger.critical(f'Попытка запуска клиента с неподходящим номером порта '
-                                   f'{self.server_port}. Допустимые номера порта: от 1024 до 65535. '
-                                   f'Клиент завершается.')
+                                 f'{self.server_port}. Допустимые номера порта: от 1024 до 65535. '
+                                 f'Клиент завершается.')
             sys.exit(1)
 
         if not self.client_name:
@@ -65,7 +68,7 @@ class Client:
                     print(f'Получено сообщение от пользователя {self.message[SENDER]}:\n'
                           f'{self.message[MESSAGE_TEXT]}')
                     self.logger.info(f'Получено сообщение от пользователя {self.message[SENDER]}:\n'
-                                       f'{self.message[MESSAGE_TEXT]}')
+                                     f'{self.message[MESSAGE_TEXT]}')
                 else:
                     self.logger.error(f'Полочено некорректное сообщение от сервера {self.message}')
             except IncorrectDataReceivedError:
@@ -149,3 +152,68 @@ class Client:
                 break
             else:
                 print('Команда не распознана, попробуйте снова. help - вывести поддерживаемые команды')
+
+    def process_answ(self):
+        """
+        Разбирает ответ от сервера
+        :return: код ответа и сообщение (при наличии)
+        """
+        self.logger.debug(f'Выполняется разбор сообщения {self.message} от сервера')
+
+        if RESPONSE in self.message:
+            if self.message[RESPONSE] == 200:
+                return '200 : OK'
+            elif ERROR in self.message:
+                return f'400: {self.message[ERROR]}'
+            raise ReqFieldMissingError(ERROR)
+        raise ReqFieldMissingError(RESPONSE)
+
+    def run(self):
+        """
+        Осуществляет запуск и функционирование клиента
+        :return: None
+        """
+        self.check_client_parameters()
+        try:
+            self.transport.connect((self.server_address, self.server_port))
+            self.logger.info(f'Запущен клиент с параметрами: '
+                             f'адрес сервера: {self.server_address}, порт: {self.server_port}')
+            send_message(self.transport, self.create_presence())
+            self.message = get_message(self.transport)
+            self.answer = self.process_answ()
+            self.logger.info(f'Принят ответ от сервера {self.answer}')
+            print(f'Установлено соединение клиента {self.client_name} с сервером.')
+        except json.JSONDecodeError:
+            self.logger.error('Не удалось декодировать полученную JSON строку')
+            sys.exit(1)
+        except ServerError as error:
+            self.logger.error(f'При установке соединения сервер вернул ошибку: {error.text}')
+            sys.exit(1)
+        except (ConnectionRefusedError, ConnectionError):
+            self.logger.critical(f'Не удалось подключиться к серверу {self.server_address} : {self.server_port}. '
+                                 f'Сервер отверг запрос на подключение.')
+            sys.exit(1)
+        except ReqFieldMissingError as missing_error:
+            self.logger.error(f'В ответе сервера отсутствует необходимое поле '
+                              f'{missing_error.missing_field}')
+            sys.exit(1)
+        else:
+            receiver = threading.Thread(target=self.process_message_from_server)
+            receiver.daemon = True
+            receiver.start()
+
+            user_interface = threading.Thread(target=self.user_interactive)
+            user_interface.daemon = True
+            user_interface.start()
+            self.logger.debug('Запущены процессы')
+
+            while True:
+                time.sleep(1)
+                if receiver.is_alive() and user_interface.is_alive():
+                    continue
+                break
+
+
+if __name__ == '__main__':
+    client = Client()
+    client.run()

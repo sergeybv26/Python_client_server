@@ -42,3 +42,11 @@ class ServerError(Exception):
 
     def __str__(self):
         return self.text
+
+
+class MissingClient(Exception):
+    """
+    Исключение - потуря связи с клиентом
+    """
+    def __str__(self):
+        return 'Клиент разорвал подключение'

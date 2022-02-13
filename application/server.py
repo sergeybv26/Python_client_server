@@ -2,33 +2,113 @@
 Программа-сервер. Объектно-ориентированный стиль
 """
 import logging
-import sys
 import time
 from select import select
-from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+import socket
 
-import log.server_log_config
-from common.utils import get_parameters, send_message, get_message
-from common.variables import ACTION, PRESENCE, TIME, USER, ACCOUNT_NAME, RESPONSE, RESPONSE_400, ERROR, MESSAGE, \
-    RECEIVER, SENDER, MESSAGE_TEXT, QUIT, MAX_CONNECTIONS
+from common.utils import get_message, send_message, get_parameters
+from common.variables import MAX_CONNECTIONS, RECEIVER, SENDER, ACTION, MESSAGE, TIME, MESSAGE_TEXT, PRESENCE, USER, \
+    ACCOUNT_NAME, RESPONSE, RESPONSE_400, ERROR, QUIT
 from errors import IncorrectDataReceivedError, MissingClient
+from metaclasses import ServerMaker
+import log.server_log_config
 
 
-class Server:
-    def __init__(self):
+class Server(metaclass=ServerMaker):
+    def __init__(self, listen_address, listen_port):
+        self.addr = listen_address
+        self.port = listen_port
         self.logger = logging.getLogger('server')
         self.clients = []
         self.messages = []
         self.names = {}
-        self.param = get_parameters(True)
-        self.transport = socket(AF_INET, SOCK_STREAM)
-        self.transport.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
-        self.client = None
-        self.client_address = None
-        self.client_with_msg = None
-        self.recv_data_list = []
-        self.send_data_list = []
-        self.err_list = []
+        self.sock = None
+
+    def init_socket(self):
+        self.logger.info(f'Запущен сервер. Порт для подключений: {self.port}.'
+                         f'Подключения принимаются с адреса: {self.addr}. '
+                         f'Если адрес не указан, соединения принимаются с любых адресов')
+        transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        transport.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        transport.bind((self.addr, self.port))
+        transport.settimeout(0.5)
+
+        self.sock = transport
+        self.sock.listen(MAX_CONNECTIONS)
+
+    def main_loop(self):
+        self.init_socket()
+
+        while True:
+            try:
+                client, client_address = self.sock.accept()
+            except OSError:
+                pass
+            else:
+                self.logger.info(f'Установлено соединение с клиентом {client_address}')
+                self.clients.append(client)
+
+            recv_data_list = []
+            send_data_list = []
+            err_list = []
+
+            try:
+                if self.clients:
+                    recv_data_list, send_data_list, err_list = select(self.clients, self.clients, [], 0)
+            except OSError:
+                pass
+
+            if recv_data_list:
+                for client_with_msg in recv_data_list:
+                    try:
+                        self.process_client_message(get_message(client_with_msg), client_with_msg)
+                    except IncorrectDataReceivedError:
+                        self.logger.info(f'Клиент {client_with_msg.getpeername()} отключился от сервера')
+                        self.clients.remove(client_with_msg)
+                    except MissingClient:
+                        self.logger.error('Потеря связи с клиентом')
+                        if client_with_msg in self.clients:
+                            self.clients.remove(client_with_msg)
+                        recv_data_list.remove(client_with_msg)
+                        for key in self.names.keys():
+                            if self.names[key] == client_with_msg:
+                                del self.names[key]
+                                break
+
+            for msg in self.messages:
+                try:
+                    self.process_message(msg, send_data_list)
+                except (ConnectionError, TypeError):
+                    self.logger.error(f'Связь с клиентом {msg[RECEIVER]} была потеряна.')
+                    self.clients.remove(self.names[msg[RECEIVER]])
+                    del self.names[msg[RECEIVER]]
+            self.messages.clear()
+
+    def process_message(self, message, listen_socks):
+        """
+        Выполняет отправку сообщения определенному клиенту
+        :param message: Сообщение в виде словаря
+        :param listen_socks: список сокетов
+        :return: None
+        """
+        if message[RECEIVER] in self.names.keys() and self.names[message[RECEIVER]] in listen_socks:
+            send_message(self.names[message[RECEIVER]], message)
+            self.logger.info(f'Отправлено сообщение пользователю {message[RECEIVER]} от '
+                             f'пользователя {message[SENDER]}.')
+        elif message[RECEIVER] in self.names.keys() and self.names[message[RECEIVER]] not in listen_socks:
+            raise ConnectionError
+        else:
+            response_error = {
+                ACTION: MESSAGE,
+                SENDER: 'Сервер мессенджера',
+                RECEIVER: message[SENDER],
+                TIME: time.time(),
+                MESSAGE_TEXT: f'Пользователь {message[RECEIVER]} не зарегистрирован на сервере. '
+                              f'Отправка сообщения не возможна'
+            }
+            send_message(self.names[message[SENDER]], response_error)
+            self.logger.error(f'Пользователь {message[RECEIVER]} не зарегистрирован на сервере. '
+                              f'Отправка сообщения не возможна')
 
     def process_client_message(self, message, client):
         """
@@ -62,14 +142,6 @@ class Server:
         elif ACTION in message and ACCOUNT_NAME in message and message[ACTION] == QUIT and \
                 message[ACCOUNT_NAME] in self.names.keys():
             self.clients.remove(self.names[message[ACCOUNT_NAME]])
-            try:
-                self.recv_data_list.remove(self.names[message[ACCOUNT_NAME]])
-            except ValueError:
-                pass
-            try:
-                self.send_data_list.remove(self.names[message[ACCOUNT_NAME]])
-            except ValueError:
-                pass
             self.logger.debug(f'Соединение с клиентом {message[ACCOUNT_NAME]} закрывается по инициативе клиента')
             self.names[message[ACCOUNT_NAME]].close()
             del self.names[message[ACCOUNT_NAME]]
@@ -80,99 +152,18 @@ class Server:
             send_message(client, response)
             raise IncorrectDataReceivedError
 
-    def process_message(self, message, listen_socks):
-        """
-        Выполняет отправку сообщения определенному клиенту
-        :param message: Сообщение в виде словаря
-        :param listen_socks: список сокетов
-        :return: None
-        """
 
-        if message[RECEIVER] in self.names.keys() and self.names[message[RECEIVER]] in listen_socks:
-            send_message(self.names[message[RECEIVER]], message)
-            self.logger.info(f'Отправлено сообщение пользователю {message[RECEIVER]} от '
-                             f'пользователя {message[SENDER]}.')
-        elif message[RECEIVER] in self.names.keys() and self.names[message[RECEIVER]] not in listen_socks:
-            raise ConnectionError
-        else:
-            response_error = {
-                ACTION: MESSAGE,
-                SENDER: 'Сервер мессенджера',
-                RECEIVER: message[SENDER],
-                TIME: time.time(),
-                MESSAGE_TEXT: f'Пользователь {message[RECEIVER]} не зарегистрирован на сервере. '
-                              f'Отправка сообщения не возможна'
-            }
-            send_message(self.names[message[SENDER]], response_error)
-            self.logger.error(f'Пользователь {message[RECEIVER]} не зарегистрирован на сервере. '
-                              f'Отправка сообщения не возможна')
+def main():
+    """
+    Функция, которая получает параметры командной строки и запускает сервер
+    :return: None
+    """
+    param = get_parameters(True)
+    listen_address, listen_port = param.a, param.p
 
-    def check_server_parameters(self):
-        """
-        Выполняет проверку параметров сервера
-        :return: tuple с параметрами сервера
-        """
-        if not 1023 < self.param.p < 65536:
-            self.logger.critical(f'Попытка запуска сервера с неподходящим номером порта '
-                                 f'{self.param.p}. Допустимые номера порта: от 1024 до 65535')
-            sys.exit(1)
-        return self.param.a, self.param.p
-
-    def run(self):
-        """
-        Осуществляет запуск и функционирование сервера
-        :return: None
-        """
-        self.transport.bind(self.check_server_parameters())
-        self.transport.settimeout(1)
-        self.transport.listen(MAX_CONNECTIONS)
-
-        self.logger.info(f'Запущен сервер. Порт для подключений: {self.param.p}.'
-                         f'Подключения принимаются с адреса: {self.param.a}. '
-                         f'Если адрес не указан, соединения принимаются с любых адресов')
-
-        while True:
-            try:
-                self.client, self.client_address = self.transport.accept()
-            except OSError:
-                pass
-            else:
-                self.logger.info(f'Установлено соединение с клиентом {self.client_address}')
-                self.clients.append(self.client)
-
-            try:
-                if self.clients:
-                    self.recv_data_list, self.send_data_list, self.err_list = select(self.clients, self.clients, [], 0)
-            except OSError:
-                pass
-
-            if self.recv_data_list:
-                for self.client_with_msg in self.recv_data_list:
-                    try:
-                        self.process_client_message(get_message(self.client_with_msg), self.client_with_msg)
-                    except IncorrectDataReceivedError:
-                        self.logger.info(f'Клиент {self.client_with_msg.getpeername()} отключился от сервера')
-                        self.clients.remove(self.client_with_msg)
-                    except MissingClient:
-                        self.logger.error('Потеря связи с клиентом')
-                        if self.client_with_msg in self.clients:
-                            self.clients.remove(self.client_with_msg)
-                        self.recv_data_list.remove(self.client_with_msg)
-                        for key in self.names.keys():
-                            if self.names[key] == self.client_with_msg:
-                                del self.names[key]
-                                break
-
-            for msg in self.messages:
-                try:
-                    self.process_message(msg, self.send_data_list)
-                except (ConnectionError, TypeError):
-                    self.logger.error(f'Связь с клиентом {msg[RECEIVER]} была потеряна.')
-                    self.clients.remove(self.names[msg[RECEIVER]])
-                    del self.names[msg[RECEIVER]]
-            self.messages.clear()
+    server = Server(listen_address, listen_port)
+    server.main_loop()
 
 
 if __name__ == '__main__':
-    srv = Server()
-    srv.run()
+    main()

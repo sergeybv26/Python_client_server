@@ -9,12 +9,15 @@ import socket
 from common.utils import get_message, send_message, get_parameters
 from common.variables import MAX_CONNECTIONS, RECEIVER, SENDER, ACTION, MESSAGE, TIME, MESSAGE_TEXT, PRESENCE, USER, \
     ACCOUNT_NAME, RESPONSE, RESPONSE_400, ERROR, QUIT
+from descrptrs import Port
 from errors import IncorrectDataReceivedError, MissingClient
 from metaclasses import ServerMaker
 import log.server_log_config
 
 
 class Server(metaclass=ServerMaker):
+    port = Port()
+
     def __init__(self, listen_address, listen_port):
         self.addr = listen_address
         self.port = listen_port

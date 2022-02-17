@@ -49,7 +49,8 @@ class ServerDB:
             self.last_conn = last_conn
 
     def __init__(self):
-        self.engine = create_engine('sqlite:///server_base.db3', echo=False)
+        self.engine = create_engine('sqlite:///server_base.db3', echo=False, pool_recycle=7200,
+                                    connect_args={'check_same_thread': False})
         self.Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
         self.session = Session()

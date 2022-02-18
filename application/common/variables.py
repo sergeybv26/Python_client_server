@@ -13,6 +13,8 @@ MAX_PACKAGE_LENGTH = 1024
 ENCODING = 'utf-8'
 CLIENT_DEFAULT_MODE = 'listen'
 
+SERVER_CONFIG = 'server.ini'
+
 # Константы протокола JIM
 ACCOUNT_NAME = 'account_name'
 ACTION = 'action'
@@ -31,11 +33,21 @@ MESSAGE = 'msg'
 SENDER = 'from'
 RECEIVER = 'to'
 MESSAGE_TEXT = 'message'
+GET_CONTACTS = 'get_contacts'
+LIST_INFO = 'data_list'
+REMOVE_CONTACT = 'remove'
+ADD_CONTACT = 'add'
+USERS_REQUEST = 'get_users'
 
 # Константы логгирования
 LOGGING_LEVEL = logging.DEBUG
 
 # Константы ответов сервера
+
+RESPONSE_202 = {
+    RESPONSE: 202,
+    LIST_INFO: None
+}
 
 RESPONSE_400 = {
             RESPONSE: 400,

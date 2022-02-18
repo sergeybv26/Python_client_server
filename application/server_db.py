@@ -48,6 +48,28 @@ class ServerDB:
             self.port = port
             self.last_conn = last_conn
 
+    class UsersContacts:
+        __tablename__ = 'contacts'
+        id = Column(Integer, primary_key=True)
+        user = Column(ForeignKey('all_users.id'))
+        contact = Column(ForeignKey('all_users.id'))
+
+        def __init__(self, user, contact):
+            self.user = user
+            self.contact = contact
+
+    class UsersMessageStat:
+        __tablename__ = 'message_stat'
+        id = Column(Integer, primary_key=True)
+        user = Column(ForeignKey('all_users.id'))
+        sent = Column(Integer)
+        receive = Column(Integer)
+
+        def __init__(self, user):
+            self.user = user
+            self.sent = 0
+            self.receive = 0
+
     def __init__(self):
         self.engine = create_engine('sqlite:///server_base.db3', echo=False, pool_recycle=7200,
                                     connect_args={'check_same_thread': False})
@@ -112,6 +134,55 @@ class ServerDB:
             query = query.filter(self.AllUsers.login == username)
 
         return query.all()
+
+    def process_message(self, sender, recipient):
+        sender = self.session.query(self.AllUsers).filter_by(login=sender).first().id
+        recipient = self.session.query(self.AllUsers).filter_by(login=recipient).first().id
+
+        sender_row = self.session.query(self.UsersMessageStat).filter_by(user=sender).first()
+        sender_row.sent += 1
+        # if sender_row.count():
+        #     sender_row.first().sent += 1
+        # else:
+        #     sender_row = self.UsersMessageStat(sender)
+        #     sender_row.sent += 1
+        #     self.session.add(sender_row)
+
+        recipient_row = self.session.query(self.UsersMessageStat).filter_by(user=recipient).first()
+        # if recipient_row.count():
+        recipient_row.receive += 1
+
+        self.session.commit()
+
+    def add_contact(self, user, contact):
+        user = self.session.query(self.AllUsers).filter_by(login=user).first()
+        contact = self.session.query(self.AllUsers).filter_by(login=contact).first()
+
+        if not contact or self.session.query(self.UsersContacts).filter_by(user=user.id, contact=contact.id).count():
+            return
+
+        contact_row = self.UsersContacts(user.id, contact.id)
+        self.session.add(contact_row)
+        self.session.commit()
+
+    def remove_contact(self, user, contact):
+        user = self.session.query(self.AllUsers).filter_by(login=user).first()
+        contact = self.session.query(self.AllUsers).filter_by(login=contact).first()
+
+        if not contact:
+            return
+
+        print(self.session.query(self.UsersContacts).filter(
+            self.UsersContacts.user == user.id,
+            self.UsersContacts.contact == contact.id
+        ).delete())
+
+        self.session.commit()
+
+    def get_contacts(self, username):
+        user = self.session.query(self.AllUsers).filter_by(login=username).first()
+
+        query = self.session.query()
 
 
 if __name__ == '__main__':

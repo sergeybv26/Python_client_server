@@ -37,10 +37,10 @@ def get_message(sock):
     :return: словарь ответа
     """
 
-    try:
-        encoded_response = sock.recv(variables.MAX_PACKAGE_LENGTH)
-    except (ConnectionResetError, OSError):
-        raise MissingClient
+    # try:
+    encoded_response = sock.recv(variables.MAX_PACKAGE_LENGTH)
+    # except (ConnectionResetError, OSError):
+    #     raise MissingClient
 
     if isinstance(encoded_response, bytes):
         js_response = encoded_response.decode(variables.ENCODING)

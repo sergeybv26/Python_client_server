@@ -395,6 +395,7 @@ def main():
     Функция запуска консольного мессенджера
     :return: None
     """
+    CLIENT_LOGGER.info('Запущено приложение')
     print('Консольный мессенджер. Клиентский модуль')
 
     server_address, server_port, client_name = check_client_parameters()

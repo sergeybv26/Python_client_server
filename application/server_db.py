@@ -3,6 +3,8 @@
 """
 
 from datetime import datetime
+from pprint import pprint
+
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -48,8 +50,30 @@ class ServerDB:
             self.port = port
             self.last_conn = last_conn
 
-    def __init__(self):
-        self.engine = create_engine('sqlite:///server_base.db3', echo=False, pool_recycle=7200,
+    class UsersContacts(Base):
+        __tablename__ = 'contacts'
+        id = Column(Integer, primary_key=True)
+        user = Column(ForeignKey('all_users.id'))
+        contact = Column(ForeignKey('all_users.id'))
+
+        def __init__(self, user, contact):
+            self.user = user
+            self.contact = contact
+
+    class UsersMessageStat(Base):
+        __tablename__ = 'message_stat'
+        id = Column(Integer, primary_key=True)
+        user = Column(ForeignKey('all_users.id'))
+        sent = Column(Integer)
+        receive = Column(Integer)
+
+        def __init__(self, user):
+            self.user = user
+            self.sent = 0
+            self.receive = 0
+
+    def __init__(self, path):
+        self.engine = create_engine(f'sqlite:///{path}', echo=False, pool_recycle=7200,
                                     connect_args={'check_same_thread': False})
         self.Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
@@ -113,9 +137,73 @@ class ServerDB:
 
         return query.all()
 
+    def process_message(self, sender, recipient):
+        sender = self.session.query(self.AllUsers).filter_by(login=sender).first().id
+        recipient = self.session.query(self.AllUsers).filter_by(login=recipient).first().id
+        sender_row = self.session.query(self.UsersMessageStat).filter_by(user=sender).first()
+        if sender_row:
+            sender_row.sent += 1
+        else:
+            sender_row = self.UsersMessageStat(sender)
+            sender_row.sent += 1
+            self.session.add(sender_row)
+
+        recipient_row = self.session.query(self.UsersMessageStat).filter_by(user=recipient).first()
+        if recipient_row:
+            recipient_row.receive += 1
+        else:
+            recipient_row = self.UsersMessageStat(recipient)
+            recipient_row.receive += 1
+            self.session.add(recipient_row)
+
+        self.session.commit()
+
+    def add_contact(self, user, contact):
+        user = self.session.query(self.AllUsers).filter_by(login=user).first()
+        contact = self.session.query(self.AllUsers).filter_by(login=contact).first()
+
+        if not contact or self.session.query(self.UsersContacts).filter_by(user=user.id, contact=contact.id).count():
+            return
+
+        contact_row = self.UsersContacts(user.id, contact.id)
+        self.session.add(contact_row)
+        self.session.commit()
+
+    def remove_contact(self, user, contact):
+        user = self.session.query(self.AllUsers).filter_by(login=user).first()
+        contact = self.session.query(self.AllUsers).filter_by(login=contact).first()
+
+        if not contact:
+            return
+
+        self.session.query(self.UsersContacts).filter(
+            self.UsersContacts.user == user.id,
+            self.UsersContacts.contact == contact.id
+        ).delete()
+
+        self.session.commit()
+
+    def get_contacts(self, username):
+        user = self.session.query(self.AllUsers).filter_by(login=username).first()
+
+        query = self.session.query(self.UsersContacts, self.AllUsers.login). \
+            filter_by(user=user.id). \
+            join(self.AllUsers, self.UsersContacts.contact == self.AllUsers.id)
+
+        return [contact[1] for contact in query.all()]
+
+    def message_statistic(self):
+        query = self.session.query(
+            self.AllUsers.login,
+            self.AllUsers.last_conn,
+            self.UsersMessageStat.sent,
+            self.UsersMessageStat.receive
+        ).join(self.AllUsers)
+        return query.all()
+
 
 if __name__ == '__main__':
-    db = ServerDB()
+    db = ServerDB('server_base.db3')
     db.user_login('user-1', '192.168.1.2', 7777)
     db.user_login('user-2', '192.168.1.3', 7777)
 
@@ -136,3 +224,13 @@ if __name__ == '__main__':
     print(db.user_login_history())
     print('-' * 50)
     print(db.user_login_history('user-1'))
+    db.user_login('client-1', '192.168.1.2', 7778)
+    db.user_login('client-2', '192.168.1.3', 7779)
+    db.process_message('client-1', 'client-2')
+    pprint(db.message_statistic())
+
+    db.user_login('client-3', '192.168.1.4', 7780)
+    db.add_contact('client-1', 'client-3')
+    print(db.get_contacts('client-1'))
+    db.remove_contact('client-1', 'client-3')
+    print(db.get_contacts('client-1'))

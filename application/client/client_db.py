@@ -1,6 +1,7 @@
 """
 Создает хранилище клиента
 """
+import os.path
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, create_engine
@@ -22,14 +23,14 @@ class ClientDB:
     class MessageHistory(Base):
         __tablename__ = 'message_history'
         id = Column(Integer, primary_key=True)
-        from_user = Column(String)
-        to_user = Column(String)
+        contact = Column(String)
+        direction = Column(String)
         message = Column(Text)
         date = Column(DateTime, default=datetime.now)
 
-        def __init__(self, from_user, to_user, message):
-            self.from_user = from_user
-            self.to_user = to_user
+        def __init__(self, _contact, direction, message):
+            self.contact = _contact
+            self.direction = direction
             self.message = message
 
     class Contacts(Base):
@@ -41,7 +42,9 @@ class ClientDB:
             self.name = contact
 
     def __init__(self, name):
-        self.engine = create_engine(f'sqlite:///client_{name}.db3', echo=False, pool_recycle=7200,
+        path = os.path.dirname(os.path.realpath(__file__))
+        filename = f'client_{name}.db3'
+        self.engine = create_engine(f'sqlite:///{os.path.join(path, filename)}', echo=False, pool_recycle=7200,
                                     connect_args={'check_same_thread': False})
         self.Base.metadata.create_all(self.engine)
         Session = sessionmaker(bind=self.engine)
@@ -67,13 +70,13 @@ class ClientDB:
             self.session.add(user_row)
         self.session.commit()
 
-    def save_message(self, from_user, to_user, message):
-        message_row = self.MessageHistory(from_user, to_user, message)
+    def save_message(self, _contact, direction, message):
+        message_row = self.MessageHistory(_contact, direction, message)
         self.session.add(message_row)
         self.session.commit()
 
     def get_contacts(self):
-        return [contact[0] for contact in self.session.query(self.Contacts.name).all()]
+        return [_contact[0] for _contact in self.session.query(self.Contacts.name).all()]
 
     def get_users(self):
         return [user[0] for user in self.session.query(self.KnownUsers.username).all()]
@@ -83,13 +86,15 @@ class ClientDB:
             return True
         return False
 
-    def get_history(self, from_user=None, to_user=None):
-        query = self.session.query(self.MessageHistory)
-        if from_user:
-            query = query.filter_by(from_user=from_user)
-        if to_user:
-            query = query.filter_by(to_user=to_user)
-        return [(history_row.from_user, history_row.to_user, history_row.message,
+    def check_contact(self, _contact):
+        if self.session.query(self.Contacts).filter_by(name=_contact).count():
+            return True
+        return False
+
+    def get_history(self, _contact):
+        query = self.session.query(self.MessageHistory).filter_by(contact=_contact)
+
+        return [(history_row.contact, history_row.direction, history_row.message,
                  history_row.date) for history_row in query.all()]
 
 
@@ -98,9 +103,9 @@ if __name__ == '__main__':
     for contact in ['client-3', 'client-4', 'client-5']:
         db.add_contact(contact)
     db.add_contact('client-4')
-    db.add_users(['client-1', 'client-2', 'client-3', 'client-4', 'client-5'])
-    db.save_message('client-1', 'client-4', f'Тестовое сообщение, отправленное {datetime.now()}')
-    db.save_message('client-4', 'client-1', f'Тестовое сообщение, отправленное {datetime.now()}')
+    db.add_users(['client-1', 'client-2', 'client-3', 'client-4', 'client-5', 'client-6'])
+    db.save_message('client-1', 'in', f'Тестовое сообщение, отправленное {datetime.now()}')
+    db.save_message('client-1', 'out', f'Тестовое сообщение, отправленное {datetime.now()}')
 
     print(db.get_contacts())
     print('-' * 100)
@@ -112,9 +117,9 @@ if __name__ == '__main__':
     print('-' * 100)
     print(db.get_history('client_1'))
     print('-' * 100)
-    print(db.get_history(to_user='client-1'))
+    print(sorted(db.get_history('client-1'), key=lambda item: item[3]))
     print('-' * 100)
-    print(db.get_history())
+    print(db.check_contact('client-4'))
     print('-' * 100)
     print(db.get_history('client-2'))
     print('-' * 100)

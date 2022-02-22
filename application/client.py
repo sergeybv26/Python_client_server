@@ -8,8 +8,7 @@ import sys
 import threading
 import time
 
-import log.client_log_config
-from client_db import ClientDB
+from client.client_db import ClientDB
 from common.utils import send_message, get_message, get_parameters
 from common.variables import ACTION, QUIT, TIME, ACCOUNT_NAME, MESSAGE, SENDER, RECEIVER, MESSAGE_TEXT, PRESENCE, USER, \
     RESPONSE, ERROR, GET_CONTACTS, LIST_INFO, ADD_CONTACT, USERS_REQUEST, REMOVE_CONTACT

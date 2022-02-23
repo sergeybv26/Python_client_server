@@ -38,8 +38,8 @@ class ClientDB:
         id = Column(Integer, primary_key=True)
         name = Column(String, unique=True)
 
-        def __init__(self, contact):
-            self.name = contact
+        def __init__(self, _contact):
+            self.name = _contact
 
     def __init__(self, name):
         path = os.path.dirname(os.path.realpath(__file__))
@@ -54,14 +54,14 @@ class ClientDB:
         self.session.query(self.KnownUsers).delete()
         self.session.commit()
 
-    def add_contact(self, contact):
-        if not self.session.query(self.Contacts).filter_by(name=contact).count():
-            contact_row = self.Contacts(contact)
+    def add_contact(self, _contact):
+        if not self.session.query(self.Contacts).filter_by(name=_contact).count():
+            contact_row = self.Contacts(_contact)
             self.session.add(contact_row)
             self.session.commit()
 
-    def del_contact(self, contact):
-        self.session.query(self.Contacts).filter_by(name=contact).delete()
+    def del_contact(self, _contact):
+        self.session.query(self.Contacts).filter_by(name=_contact).delete()
         self.session.commit()
 
     def add_users(self, users_list):

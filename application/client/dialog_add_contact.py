@@ -45,7 +45,7 @@ class AddContactDialog(QDialog):
         self.btn_cancel.clicked.connect(self.close)
 
         self.possible_contacts_update()
-        self.btn_refresh.clicked.connect(self.update_possible_users())
+        self.btn_refresh.clicked.connect(self.update_possible_users)
 
     def possible_contacts_update(self):
         # Заполнение списка возможных контактов разницей между всеми и уже добавленными пользователями
@@ -61,7 +61,7 @@ class AddContactDialog(QDialog):
     def update_possible_users(self):
         # Обновление списка известных пользователей (получает с сервера)
         try:
-            self.transport.user_list_update()
+            self.transport.contacts_list_request()
         except OSError:
             LOGGER.error('Ошибка обновления списка пользователей с севера')
         else:

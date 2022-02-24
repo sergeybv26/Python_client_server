@@ -172,7 +172,7 @@ class ClientMainWindow(QMainWindow):
             new_contact.setEditable(False)
             self.contacts_model.appendRow(new_contact)
             LOGGER.info(f'Успешно добавлен контакт {new_contact}')
-            self.messages.information(self, 'Успех', f'Контакт {new_contact} успешно добавлен.')
+            self.messages.information(self, 'Успех', f'Контакт успешно добавлен.')
 
     def delete_contact_window(self):
         """
@@ -204,7 +204,7 @@ class ClientMainWindow(QMainWindow):
             self.database.del_contact(contact_name)
             self.clients_list_update()
             LOGGER.info(f'Успешно удален контакт {contact_name}')
-            self.messages.information(self, 'Успех', f'Контакт {contact_name} успешно удален.')
+            self.messages.information(self, 'Успех', f'Контакт успешно удален.')
             item.close()
             if contact_name == self.current_chat:
                 self.current_chat = None
@@ -221,6 +221,7 @@ class ClientMainWindow(QMainWindow):
             return
         try:
             self.transport.send_message(self.current_chat, message_text)
+            LOGGER.info('Отправлено сообщение!!!')
         except ServerError as err:
             self.messages.critical(self, 'Ошибка сервера', err.text)
         except OSError as err:

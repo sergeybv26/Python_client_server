@@ -67,6 +67,16 @@ class ClientTransport(threading.Thread, QObject):
 
         LOGGER.debug('Установлено соединение с сервером')
 
+        try:
+            with socket_lock:
+                send_message(self.transport, self.create_presence())
+                self.process_answ(get_message(self.transport))
+        except (OSError, json.JSONDecodeError):
+            LOGGER.critical('Потеряно соединение с сервером!')
+            raise ServerError('Потеряно соединение с сервером!')
+
+        LOGGER.info('Соединение с сервером успешно установлено')
+
     def create_presence(self):
         """
         Формирует запрос на сервер о присутствии клиента

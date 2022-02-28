@@ -58,6 +58,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
         self.sock.listen(MAX_CONNECTIONS)
 
     def run(self):
+        global new_connection
         self.init_socket()
 
         while True:
@@ -83,19 +84,16 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 for client_with_msg in recv_data_list:
                     try:
                         self.process_client_message(get_message(client_with_msg), client_with_msg)
-                    except IncorrectDataReceivedError:
+                    except OSError:
                         self.logger.info(f'Клиент {client_with_msg.getpeername()} отключился от сервера')
-                        self.clients.remove(client_with_msg)
-                    except (ConnectionResetError, OSError):
-                        self.logger.error('Потеря связи с клиентом')
-                        if client_with_msg in self.clients:
-                            self.clients.remove(client_with_msg)
-                        recv_data_list.remove(client_with_msg)
-                        for key in self.names.keys():
-                            if self.names[key] == client_with_msg:
-                                self.database.user_logout(key)
-                                del self.names[key]
+                        for name in self.names:
+                            if self.names[name] == client_with_msg:
+                                self.database.user_logout(name)
+                                del self.names[name]
                                 break
+                        self.clients.remove(client_with_msg)
+                        with conflag_lock:
+                            new_connection = True
 
             for msg in self.messages:
                 try:
@@ -106,6 +104,8 @@ class Server(threading.Thread, metaclass=ServerMaker):
                     self.clients.remove(self.names[msg[RECEIVER]])
                     self.database.user_logout(msg[RECEIVER])
                     del self.names[msg[RECEIVER]]
+                    with conflag_lock:
+                        new_connection = True
             self.messages.clear()
 
     def process_message(self, message, listen_socks):
@@ -167,6 +167,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 TIME in message and MESSAGE_TEXT in message:
             self.messages.append(message)
             self.database.process_message(message[SENDER], message[RECEIVER])
+            send_message(client, {RESPONSE: 200})
             return
         elif ACTION in message and ACCOUNT_NAME in message and message[ACTION] == QUIT and \
                 message[ACCOUNT_NAME] in self.names.keys():

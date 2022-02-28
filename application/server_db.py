@@ -92,6 +92,8 @@ class ServerDB:
             user = self.AllUsers(username)
             self.session.add(user)
             self.session.commit()
+            user_statistic_create = self.UsersMessageStat(user.id)
+            self.session.add(user_statistic_create)
 
         new_active_user = self.ActiveUsers(user.id, ip_address, port, datetime.now())
         self.session.add(new_active_user)
@@ -141,20 +143,10 @@ class ServerDB:
         sender = self.session.query(self.AllUsers).filter_by(login=sender).first().id
         recipient = self.session.query(self.AllUsers).filter_by(login=recipient).first().id
         sender_row = self.session.query(self.UsersMessageStat).filter_by(user=sender).first()
-        if sender_row:
-            sender_row.sent += 1
-        else:
-            sender_row = self.UsersMessageStat(sender)
-            sender_row.sent += 1
-            self.session.add(sender_row)
+        sender_row.sent += 1
 
         recipient_row = self.session.query(self.UsersMessageStat).filter_by(user=recipient).first()
-        if recipient_row:
-            recipient_row.receive += 1
-        else:
-            recipient_row = self.UsersMessageStat(recipient)
-            recipient_row.receive += 1
-            self.session.add(recipient_row)
+        recipient_row.receive += 1
 
         self.session.commit()
 

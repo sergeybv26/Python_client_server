@@ -5,7 +5,7 @@
 from datetime import datetime
 from pprint import pprint
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, create_engine, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -18,9 +18,12 @@ class ServerDB:
         id = Column(Integer, primary_key=True)
         login = Column(String, unique=True)
         last_conn = Column(DateTime, default=datetime.now)
+        password = Column(String)
+        public_key = Column(Text, default=None)
 
-        def __init__(self, login):
+        def __init__(self, login, password):
             self.login = login
+            self.password = password
 
     class ActiveUsers(Base):
         __tablename__ = 'active_users'
@@ -82,18 +85,24 @@ class ServerDB:
         self.session.query(self.ActiveUsers).delete()
         self.session.commit()
 
-    def user_login(self, username, ip_address, port):
+    def user_login(self, username, ip_address, port, pubkey):
+        """
+        Записывает в базу факт входа пользователя. Обновляет публичный ключ пользователя, при его изменении
+        :param username: имя пользователя
+        :param ip_address: ip-адрес ПК, с которого подключается пользователь
+        :param port: порт
+        :param pubkey: публичный ключ
+        :return: None
+        """
         rez = self.session.query(self.AllUsers).filter_by(login=username)
 
         if rez.count():
             user = rez.first()
             user.last_conn = datetime.now()
+            if user.public_key != pubkey:
+                user.public_key = pubkey
         else:
-            user = self.AllUsers(username)
-            self.session.add(user)
-            self.session.commit()
-            user_statistic_create = self.UsersMessageStat(user.id)
-            self.session.add(user_statistic_create)
+            raise ValueError('Пользователь не зарегистрирован')
 
         new_active_user = self.ActiveUsers(user.id, ip_address, port, datetime.now())
         self.session.add(new_active_user)
@@ -104,6 +113,11 @@ class ServerDB:
         self.session.commit()
 
     def user_logout(self, username):
+        """
+        Фиксирует отключение пользователя. Удаляет пользователя из таблицы активных пользователей
+        :param username: имя пользователя
+        :return: None
+        """
         user = self.session.query(self.AllUsers).filter_by(login=username).first()
 
         self.session.query(self.ActiveUsers).filter_by(user=user.id).delete()
@@ -111,6 +125,10 @@ class ServerDB:
         self.session.commit()
 
     def users_list(self):
+        """
+        Формирует список зарегистрированных пользователей и время их последнего входа
+        :return: список кортежей (имя пользователя, время последнего входа)
+        """
         query = self.session.query(
             self.AllUsers.login,
             self.AllUsers.last_conn
@@ -118,6 +136,10 @@ class ServerDB:
         return query.all()
 
     def active_users_list(self):
+        """
+        Формирует список активных пользователей
+        :return: список кортежей (имя пользователя, ip, порт, время входа)
+        """
         query = self.session.query(
             self.AllUsers.login,
             self.ActiveUsers.ip,
@@ -195,7 +217,7 @@ class ServerDB:
 
 
 if __name__ == '__main__':
-    db = ServerDB('server_base.db3')
+    db = ServerDB('../server_base.db3')
     db.user_login('user-1', '192.168.1.2', 7777)
     db.user_login('user-2', '192.168.1.3', 7777)
 

@@ -1,12 +1,8 @@
 """
 Программа-клиент. Объектно-ориентированный стиль
 """
-import json
 import logging
-import socket
 import sys
-import threading
-import time
 
 from PyQt5.QtWidgets import QApplication
 
@@ -14,12 +10,9 @@ from client.client_db import ClientDB
 from client.dialog_start import UserNameDialog
 from client.main_window import ClientMainWindow
 from client.transport import ClientTransport
-from common.utils import send_message, get_message, get_parameters
-from common.variables import ACTION, QUIT, TIME, ACCOUNT_NAME, MESSAGE, SENDER, RECEIVER, MESSAGE_TEXT, PRESENCE, USER, \
-    RESPONSE, ERROR, GET_CONTACTS, LIST_INFO, ADD_CONTACT, USERS_REQUEST, REMOVE_CONTACT
-from errors import IncorrectDataReceivedError, ReqFieldMissingError, ServerError
-from metaclasses import ClientMaker
-from decos import log
+from common.utils import get_parameters
+from common.errors import ServerError
+from common.decos import log
 
 CLIENT_LOGGER = logging.getLogger('client')
 

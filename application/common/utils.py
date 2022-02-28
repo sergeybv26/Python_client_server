@@ -9,8 +9,7 @@ from common import variables
 
 
 sys.path.append('../')
-from decos import log
-from errors import MissingClient
+from common.decos import log
 
 
 @log

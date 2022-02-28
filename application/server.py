@@ -14,15 +14,14 @@ import socket
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
-from common.utils import get_message, send_message, get_parameters
+from common.utils import get_message, send_message
 from common.variables import MAX_CONNECTIONS, RECEIVER, SENDER, ACTION, MESSAGE, TIME, MESSAGE_TEXT, PRESENCE, USER, \
     ACCOUNT_NAME, RESPONSE, RESPONSE_400, ERROR, QUIT, GET_CONTACTS, RESPONSE_202, LIST_INFO, ADD_CONTACT, \
     REMOVE_CONTACT, USERS_REQUEST, SERVER_CONFIG
-from descrptrs import Port
-from errors import IncorrectDataReceivedError, MissingClient
-from metaclasses import ServerMaker
-import log.server_log_config
-from server_db import ServerDB
+from common.descrptrs import Port
+from common.errors import IncorrectDataReceivedError
+from common.metaclasses import ServerMaker
+from server.server_db import ServerDB
 from server_gui import MainWindow, gui_create_model, StatisticWindow, create_stat_model, ConfigWindow
 
 stat_window = None

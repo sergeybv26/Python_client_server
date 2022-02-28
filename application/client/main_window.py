@@ -11,8 +11,7 @@ sys.path.append('../')
 from client.dialog_add_contact import AddContactDialog
 from client.dialog_del_contact import DelContactDialog
 from client.main_window_ui import Ui_MainClientWindow
-from errors import ServerError
-import log.client_log_config
+from common.errors import ServerError
 
 LOGGER = logging.getLogger('client')
 select_dialog = None

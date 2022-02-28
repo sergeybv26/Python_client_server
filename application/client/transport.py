@@ -13,8 +13,7 @@ sys.path.append('../')
 from common.utils import send_message, get_message
 from common.variables import ACTION, PRESENCE, TIME, USER, ACCOUNT_NAME, RESPONSE, ERROR, MESSAGE, SENDER, RECEIVER, \
     MESSAGE_TEXT, GET_CONTACTS, LIST_INFO, USERS_REQUEST, ADD_CONTACT, REMOVE_CONTACT, QUIT
-from errors import ServerError
-import log.client_log_config
+from common.errors import ServerError
 
 LOGGER = logging.getLogger('client')
 QNT_OF_CONNECTION_ATT = 5  # Количество попыток соединения с сервером

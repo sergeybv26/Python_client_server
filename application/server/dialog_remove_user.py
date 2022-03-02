@@ -2,7 +2,7 @@
 Диалоговое окно удаления пользователя
 """
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton
+from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QApplication
 
 
 class DeleteUserDialog(QDialog):
@@ -55,3 +55,14 @@ class DeleteUserDialog(QDialog):
             self.server_thread.remove_client(sock)
         self.server_thread.service_update_lists()  # Рассылка клиентам о необходимости обновить справочники
         self.close()
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+    from server_db import ServerDB
+    database = ServerDB('../server_base_test_db3')
+    from server_core import Server
+    server = Server('127.0.0.1', 7777, database)
+    dialog = DeleteUserDialog(database, server)
+    dialog.show()
+    app.exec_()

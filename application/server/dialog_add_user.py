@@ -83,4 +83,9 @@ class RegisterUser(QDialog):
 
 if __name__ == '__main__':
     app = QApplication([])
-    
+    from server_db import ServerDB
+    database = ServerDB('../server_base_test_db3')
+    from server_core import Server
+    server = Server('127.0.0.1', 7777, database)
+    dialog = RegisterUser(database, server)
+    app.exec_()

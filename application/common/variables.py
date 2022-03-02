@@ -8,7 +8,7 @@ DEFAULT_IP_ADDRESS = '127.0.0.1'
 
 MAX_CONNECTIONS = 5
 
-MAX_PACKAGE_LENGTH = 1024
+MAX_PACKAGE_LENGTH = 10240
 
 ENCODING = 'utf-8'
 CLIENT_DEFAULT_MODE = 'listen'
@@ -38,6 +38,9 @@ LIST_INFO = 'data_list'
 REMOVE_CONTACT = 'remove'
 ADD_CONTACT = 'add'
 USERS_REQUEST = 'get_users'
+DATA = 'bin'
+PUBLIC_KEY = 'pubkey'
+PUBLIC_KEY_REQUEST = 'pubkey_need'
 
 # Константы логгирования
 LOGGING_LEVEL = logging.DEBUG
@@ -53,3 +56,12 @@ RESPONSE_400 = {
             RESPONSE: 400,
             ERROR: 'Bad request'
         }
+
+RESPONSE_205 = {
+    RESPONSE: 205
+}
+
+RESPONSE_511 = {
+    RESPONSE: 511,
+    DATA: None
+}

@@ -295,3 +295,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 send_message(self.names[client], RESPONSE_205)
             except OSError:
                 self.remove_client(self.names[client])
+
+
+if __name__ == '__main__':
+    pass

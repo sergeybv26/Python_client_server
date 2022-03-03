@@ -14,6 +14,7 @@ from common.variables import SERVER_CONFIG
 class ConfigWindow(QDialog):
     def __init__(self, config):
         super().__init__()
+        self.config = config
         self.init_ui()
 
     def init_ui(self):
@@ -113,3 +114,7 @@ class ConfigWindow(QDialog):
                     message.information(self, 'ОК', 'Настройки успешно сохранены')
             else:
                 message.warning(self, 'Ошибка', 'Порт должен быть от 1024 до 65535')
+
+
+if __name__ == '__main__':
+    pass

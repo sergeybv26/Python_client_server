@@ -13,7 +13,7 @@ MAX_PACKAGE_LENGTH = 10240
 ENCODING = 'utf-8'
 CLIENT_DEFAULT_MODE = 'listen'
 
-SERVER_CONFIG = 'server.ini'
+SERVER_CONFIG = 'server/server.ini'
 
 # Константы протокола JIM
 ACCOUNT_NAME = 'account_name'

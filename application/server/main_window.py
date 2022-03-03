@@ -124,3 +124,7 @@ class MainWindow(QMainWindow):
         global remove_window
         remove_window = DeleteUserDialog(self.database, self.server_thread)
         remove_window.show()
+
+
+if __name__ == '__main__':
+    pass

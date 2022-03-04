@@ -73,12 +73,10 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 self.clients.append(client)
 
             recv_data_list = []
-            send_data_list = []
-            err_list = []
 
             try:
                 if self.clients:
-                    recv_data_list, send_data_list, err_list = select(self.clients, self.clients, [], 0)
+                    recv_data_list, self.listen_sockets, self.error_sockets = select(self.clients, self.clients, [], 0)
             except OSError as err:
                 self.logger.error(f'Ошибка работы с сокетами: {err}')
 

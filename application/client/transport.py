@@ -150,7 +150,7 @@ class ClientTransport(threading.Thread, QObject):
                 MESSAGE_TEXT in message and \
                 message[RECEIVER] == self.username:
             LOGGER.debug(f'Получено сообщение от пользователя {message[SENDER]}:\n{message[MESSAGE_TEXT]}')
-            self.new_message.emit(message[SENDER])
+            self.new_message.emit(message)
 
     def contacts_list_request(self):
         """

@@ -28,7 +28,7 @@ class ClientTransport(threading.Thread, QObject):
     """
     Класс - реализует транспортную подсистему приложения-клиента
     """
-    new_message = pyqtSignal(str)
+    new_message = pyqtSignal(dict)
     message_205 = pyqtSignal()
     connection_lost = pyqtSignal()
 
@@ -150,7 +150,6 @@ class ClientTransport(threading.Thread, QObject):
                 MESSAGE_TEXT in message and \
                 message[RECEIVER] == self.username:
             LOGGER.debug(f'Получено сообщение от пользователя {message[SENDER]}:\n{message[MESSAGE_TEXT]}')
-            # self.database.save_message(message[SENDER], 'in', message[MESSAGE_TEXT])
             self.new_message.emit(message[SENDER])
 
     def contacts_list_request(self):
@@ -319,3 +318,7 @@ class ClientTransport(threading.Thread, QObject):
             if message:
                 LOGGER.debug(f'Принято сообщение от сервера: {message}')
                 self.process_answ(message)
+
+
+if __name__ == '__main__':
+    pass

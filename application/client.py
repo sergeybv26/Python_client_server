@@ -6,7 +6,7 @@ import logging
 import os.path
 import sys
 
-import RSA as RSA
+from Cryptodome.PublicKey import RSA
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from client.client_db import ClientDB

@@ -70,3 +70,7 @@ def get_parameters(is_server=False):
     parameters = parser_param.parse_args(sys.argv[1:])
 
     return parameters
+
+
+if __name__ == '__main__':
+    pass

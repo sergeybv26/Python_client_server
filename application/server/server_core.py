@@ -85,6 +85,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
             if recv_data_list:
                 for client_with_msg in recv_data_list:
                     try:
+                        self.logger.debug('Запускается процесс обработки сообщения от клиента')
                         self.process_client_message(get_message(client_with_msg), client_with_msg)
                     except (OSError, TypeError, json.JSONDecodeError) as err:
                         self.logger.info(f'Ошибка получения сообщения от клиента: {err}')
@@ -111,12 +112,15 @@ class Server(threading.Thread, metaclass=ServerMaker):
         :param message: Сообщение в виде словаря
         :return: None
         """
-        if message[RECEIVER] in self.names.keys() and self.names[message[RECEIVER]] in self.listen_sockets:
+        self.logger.debug('Выполняется отправка сообщения')
+        if message[RECEIVER] in self.names and self.names[message[RECEIVER]] in self.listen_sockets:
+            self.logger.info('Пользователь найден, сообщение отправляется')
             try:
                 send_message(self.names[message[RECEIVER]], message)
                 self.logger.info(f'Отправлено сообщение пользователю {message[RECEIVER]} от '
                                  f'пользователя {message[SENDER]}.')
             except OSError:
+                self.logger.error(f'Ошибка отправки сообщения пользователю {message[RECEIVER]}')
                 self.remove_client(self.names[message[RECEIVER]])
         elif message[RECEIVER] in self.names.keys() and self.names[message[RECEIVER]] not in self.listen_sockets:
             self.logger.error(f'Связь с клиентом {message[RECEIVER]} была потеряна. '
@@ -145,9 +149,11 @@ class Server(threading.Thread, metaclass=ServerMaker):
                 RECEIVER in message and SENDER in message and \
                 TIME in message and MESSAGE_TEXT in message and \
                 self.names[message[SENDER]] == client:
+            self.logger.debug(f'Обработка сообщения от клиента {message[SENDER]} клиенту {message[RECEIVER]}')
             if message[RECEIVER] in self.names:
                 self.process_message(message)
                 self.database.process_message(message[SENDER], message[RECEIVER])
+                self.logger.debug('Сообщение обработано и сохранено в БД')
                 try:
                     send_message(client, {RESPONSE: 200})
                 except OSError:

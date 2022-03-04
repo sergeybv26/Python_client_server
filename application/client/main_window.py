@@ -1,12 +1,19 @@
 """
 Главное окно
 """
+import base64
+import json
 import logging
 import sys
 
+from Cryptodome.Cipher import PKCS1_OAEP
+from Cryptodome.PublicKey import RSA
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
 from PyQt5.QtWidgets import QMainWindow, qApp, QMessageBox, QApplication
+
+from common.variables import MESSAGE_TEXT, SENDER
+
 sys.path.append('../')
 from client.dialog_add_contact import AddContactDialog
 from client.dialog_del_contact import DelContactDialog
@@ -19,10 +26,15 @@ remove_dialog = None
 
 
 class ClientMainWindow(QMainWindow):
-    def __init__(self, database, transport):
+    """
+    Класс - основное окно клиента.
+    """
+    def __init__(self, database, transport, keys):
         super().__init__()
         self.database = database
         self.transport = transport
+
+        self.decrypter = PKCS1_OAEP.new(keys)
 
         self.ui = Ui_MainClientWindow()
         self.ui.setupUi(self)
@@ -41,6 +53,8 @@ class ClientMainWindow(QMainWindow):
         self.history_model = None
         self.messages = QMessageBox()
         self.current_chat = None
+        self.current_chat_key = None
+        self.encryptor = None
         self.ui.list_messages.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.ui.list_messages.setWordWrap(True)
 
@@ -63,6 +77,10 @@ class ClientMainWindow(QMainWindow):
         self.ui.btn_clear.setDisabled(True)
         self.ui.btn_send.setDisabled(True)
         self.ui.text_message.setDisabled(True)
+
+        self.encryptor = None
+        self.current_chat = None
+        self.current_chat_key = None
 
     def history_list_update(self):
         """
@@ -107,9 +125,24 @@ class ClientMainWindow(QMainWindow):
 
     def set_active_user(self):
         """
-        Устанавливает активного собеседника
+        Устанавливает активного собеседника.
+        Запрашивает публичный ключ пользователя и создает объект шифрования
         :return: None
         """
+        try:
+            self.current_chat_key = self.transport.key_request(self.current_chat)
+            LOGGER.debug(f'Загружен публичный ключ пользователя {self.current_chat}')
+            if self.current_chat_key:
+                self.encryptor = PKCS1_OAEP.new(RSA.import_key(self.current_chat_key))
+        except (OSError, json.JSONDecodeError):
+            self.current_chat_key = None
+            self.encryptor = None
+            LOGGER.debug(f'Не удалось получить публичный ключ пользователя {self.current_chat}')
+
+        if not self.current_chat_key:
+            self.messages.warning(self, 'Ошибка', 'Для выбранного пользователя нет ключа шифрования.')
+            return
+
         self.ui.label_new_message.setText(f'Введите сообщение для {self.current_chat}:')
         self.ui.btn_clear.setDisabled(False)
         self.ui.btn_send.setDisabled(False)
@@ -218,8 +251,10 @@ class ClientMainWindow(QMainWindow):
         self.ui.text_message.clear()
         if not message_text:
             return
+        message_text_encrypted = self.encryptor.encrypt(message_text.encode('utf-8'))
+        message_text_encrypted_base64 = base64.b64encode(message_text_encrypted)
         try:
-            self.transport.send_message(self.current_chat, message_text)
+            self.transport.send_message(self.current_chat, message_text_encrypted_base64.decode('ascii'))
             LOGGER.info('Отправлено сообщение!!!')
         except ServerError as err:
             self.messages.critical(self, 'Ошибка сервера', err.text)
@@ -236,13 +271,24 @@ class ClientMainWindow(QMainWindow):
             LOGGER.debug(f'Отправлено сообщение для {self.current_chat}:\n{message_text}')
             self.history_list_update()
 
-    @pyqtSlot(str)
-    def message(self, sender):
+    @pyqtSlot(dict)
+    def message(self, message):
         """
-        Слот приема нового сообщения
-        :param sender: контакт-отправитель
+        Слот приема нового сообщения.
+        Выполняет дешифровку поступаемых сообщений и их сохранение в БД в историю сообщений.
+        :param message: сообщение
         :return: None
         """
+        encrypted_message = base64.b64decode(message[MESSAGE_TEXT])
+        try:
+            decrypted_message = self.decrypter.decrypt(encrypted_message)
+        except (ValueError, TypeError):
+            self.messages.warning(self, 'Ошибка', 'Не удалось декодировать сообщение.')
+            return
+        self.database.save_message(self.current_chat, 'in', decrypted_message.decode('utf-8'))
+
+        sender = message[SENDER]
+
         if sender == self.current_chat:
             self.history_list_update()
         else:
@@ -260,6 +306,7 @@ class ClientMainWindow(QMainWindow):
                                           QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
                     self.add_contact(sender)
                     self.current_chat = sender
+                    self.database.save_message(self.current_chat, 'in', decrypted_message.decode('utf-8'))
                     self.set_active_user()
 
     @pyqtSlot()
@@ -271,14 +318,27 @@ class ClientMainWindow(QMainWindow):
         self.messages.warning(self, 'Сбой соединения', 'Потеряно соединение с сервером.')
         self.close()
 
+    @pyqtSlot()
+    def signal_205(self):
+        """
+        Слот, который выполняет обновление базы данных по команде от сервера
+        :return: None
+        """
+        if self.current_chat and not self.database.check_user(self.current_chat):
+            self.messages.warning(self, 'Предупреждение', 'Собеседник был удален с сервера')
+            self.set_disabled_input()
+            self.current_chat = None
+        self.clients_list_update()
+
     def make_connection(self, trans_obj):
         """
-        Создает соединение со слотами
+        Создает соединение сигналов со слотами
         :param trans_obj: Экземпляр класса-транспорта клиента
         :return: None
         """
         trans_obj.new_message.connect(self.message)
         trans_obj.connection_lost.connect(self.connection_lost)
+        trans_obj.message_205.connect(self.signal_205)
 
 
 if __name__ == '__main__':

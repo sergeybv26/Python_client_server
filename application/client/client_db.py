@@ -10,9 +10,15 @@ from sqlalchemy.orm import sessionmaker
 
 
 class ClientDB:
+    """
+    Класс - осуществляет работу с базой данных клиента.
+    """
     Base = declarative_base()
 
     class KnownUsers(Base):
+        """
+        Класс - создает таблицу известных пользователей
+        """
         __tablename__ = 'known_users'
         id = Column(Integer, primary_key=True)
         username = Column(String)
@@ -21,6 +27,9 @@ class ClientDB:
             self.username = username
 
     class MessageHistory(Base):
+        """
+        Класс - создает таблицу, хранящую историю сообщений
+        """
         __tablename__ = 'message_history'
         id = Column(Integer, primary_key=True)
         contact = Column(String)
@@ -34,6 +43,9 @@ class ClientDB:
             self.message = message
 
     class Contacts(Base):
+        """
+        Класс - создает таблицу для хранения контактов
+        """
         __tablename__ = 'contacts'
         id = Column(Integer, primary_key=True)
         name = Column(String, unique=True)
@@ -55,47 +67,100 @@ class ClientDB:
         self.session.commit()
 
     def add_contact(self, _contact):
+        """
+        Добавляет контакт в базу данных
+        :param _contact: имя контакта
+        :return: None
+        """
         if not self.session.query(self.Contacts).filter_by(name=_contact).count():
             contact_row = self.Contacts(_contact)
             self.session.add(contact_row)
             self.session.commit()
 
     def del_contact(self, _contact):
+        """
+        Удаляет контакт из базы данных
+        :param _contact: имя контакта
+        :return: None
+        """
         self.session.query(self.Contacts).filter_by(name=_contact).delete()
         self.session.commit()
 
     def add_users(self, users_list):
+        """
+        Осуществляет заполнение таблицы известных пользователей
+        :param users_list: список пользователей
+        :return: None
+        """
         for user in users_list:
             user_row = self.KnownUsers(user)
             self.session.add(user_row)
         self.session.commit()
 
     def save_message(self, _contact, direction, message):
+        """
+        Сохраняет сообщение в базе данных
+        :param _contact: имя контакта
+        :param direction: направляние: in или out
+        :param message: текст сообщения
+        :return: None
+        """
         message_row = self.MessageHistory(_contact, direction, message)
         self.session.add(message_row)
         self.session.commit()
 
     def get_contacts(self):
+        """
+        Запрашивает из базы список всех контактов
+        :return: Список контактов
+        """
         return [_contact[0] for _contact in self.session.query(self.Contacts.name).all()]
 
     def get_users(self):
+        """
+        Запрашивает из базы список всех известных пользователей
+        :return: список пользователей
+        """
         return [user[0] for user in self.session.query(self.KnownUsers.username).all()]
 
     def check_user(self, user):
+        """
+        Осуществляет проверку существует ли пользователь в таблице известных пользователей
+        :param user: имя пользователя
+        :return: результат проверки - булево значение
+        """
         if self.session.query(self.KnownUsers).filter_by(username=user).count():
             return True
         return False
 
     def check_contact(self, _contact):
+        """
+        Осуществляет проверку существует ли пользователь в таблице контактов
+        :param _contact: имя контакта
+        :return: результат проверки - булево значение
+        """
         if self.session.query(self.Contacts).filter_by(name=_contact).count():
             return True
         return False
 
     def get_history(self, _contact):
+        """
+        Запрашивает в базе данных историю сообщений с пользователем
+        :param _contact: имя пользователя
+        :return: список кортежей (имя контакта, направление, текст сообщения, дата)
+        """
         query = self.session.query(self.MessageHistory).filter_by(contact=_contact)
 
         return [(history_row.contact, history_row.direction, history_row.message,
                  history_row.date) for history_row in query.all()]
+
+    def contacts_clear(self):
+        """
+        Очищает таблицу контактов
+        :return: None
+        """
+        self.session.query(self.Contacts).delete()
+        self.session.commit()
 
 
 if __name__ == '__main__':

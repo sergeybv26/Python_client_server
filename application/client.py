@@ -1,25 +1,21 @@
 """
 Программа-клиент. Объектно-ориентированный стиль
 """
-import json
+import argparse
 import logging
-import socket
+import os.path
 import sys
-import threading
-import time
 
-from PyQt5.QtWidgets import QApplication
+from Cryptodome.PublicKey import RSA
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from client.client_db import ClientDB
 from client.dialog_start import UserNameDialog
 from client.main_window import ClientMainWindow
 from client.transport import ClientTransport
-from common.utils import send_message, get_message, get_parameters
-from common.variables import ACTION, QUIT, TIME, ACCOUNT_NAME, MESSAGE, SENDER, RECEIVER, MESSAGE_TEXT, PRESENCE, USER, \
-    RESPONSE, ERROR, GET_CONTACTS, LIST_INFO, ADD_CONTACT, USERS_REQUEST, REMOVE_CONTACT
-from errors import IncorrectDataReceivedError, ReqFieldMissingError, ServerError
-from metaclasses import ClientMaker
-from decos import log
+from common.errors import ServerError
+from common.decos import log
+from common.variables import DEFAULT_IP_ADDRESS, DEFAULT_PORT
 
 CLIENT_LOGGER = logging.getLogger('client')
 
@@ -30,8 +26,16 @@ def check_client_parameters():
     Выполняет проверку параметров клиента
     :return: Кортеж - параметры клиента
     """
-    params = get_parameters()
-    _server_address, _server_port, _client_name = params.a, params.p, params.name
+    parser_param = argparse.ArgumentParser()
+
+    parser_param.add_argument('addr', default=DEFAULT_IP_ADDRESS, nargs='?')
+    parser_param.add_argument('port', default=DEFAULT_PORT, type=int, nargs='?')
+    parser_param.add_argument('-n', '--name', default=None, nargs='?')
+    parser_param.add_argument('-p', '--password', default='', nargs='?')
+
+    params = parser_param.parse_args(sys.argv[1:])
+    _server_address, _server_port, _client_name, _client_password = params.addr, params.port, \
+                                                                    params.name, params.password
 
     if not 1023 < _server_port < 65536:
         CLIENT_LOGGER.critical(f'Попытка запуска клиента с неподходящим номером порта '
@@ -39,22 +43,24 @@ def check_client_parameters():
                                f'Клиент завершается.')
         sys.exit(1)
 
-    return _server_address, _server_port, _client_name
+    return _server_address, _server_port, _client_name, _client_password
 
 
 if __name__ == '__main__':
     CLIENT_LOGGER.info('Запущено приложение')
 
-    server_address, server_port, client_name = check_client_parameters()
+    server_address, server_port, client_name, client_password = check_client_parameters()
 
     client_app = QApplication(sys.argv)
 
-    if not client_name:
-        start_dialog = UserNameDialog()
+    start_dialog = UserNameDialog()
+
+    if not client_name or not client_password:
         client_app.exec_()
         if start_dialog.ok_pressed:
             client_name = start_dialog.client_name.text()
-            del start_dialog
+            client_password = start_dialog.client_password.text()
+            CLIENT_LOGGER.debug(f'Введены параметры: username: {client_name}, password: {client_password}')
         else:
             exit(0)
 
@@ -63,18 +69,34 @@ if __name__ == '__main__':
                        f'порт - {server_port}, '
                        f'имя пользователя - {client_name}.')
 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    key_file = os.path.join(dir_path, f'{client_name}.key')
+
+    if not os.path.exists(key_file):
+        keys = RSA.generate(2048, os.urandom)
+        with open(key_file, 'wb') as file:
+            file.write(keys.export_key())
+    else:
+        with open(key_file, 'rb') as file:
+            keys = RSA.import_key(file.read())
+
+    CLIENT_LOGGER.debug('Ключи успешно загружены')
+
     database = ClientDB(client_name)
 
     try:
-        transport = ClientTransport(server_address, server_port, database, client_name)
+        transport = ClientTransport(server_address, server_port, database, client_name, client_password, keys)
     except ServerError as err:
-        print(err.text)
+        message = QMessageBox()
+        message.critical(start_dialog, 'Ошибка сервера', err.text)
         exit(1)
 
     transport.setDaemon(True)
     transport.start()
 
-    main_window = ClientMainWindow(database, transport)
+    del start_dialog
+
+    main_window = ClientMainWindow(database, transport, keys)
     main_window.make_connection(transport)
     main_window.setWindowTitle(f'Чат-программа - {client_name}')
     client_app.exec_()

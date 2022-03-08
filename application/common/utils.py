@@ -9,8 +9,7 @@ from common import variables
 
 
 sys.path.append('../')
-from decos import log
-from errors import MissingClient
+from common.decos import log
 
 
 @log
@@ -71,3 +70,7 @@ def get_parameters(is_server=False):
     parameters = parser_param.parse_args(sys.argv[1:])
 
     return parameters
+
+
+if __name__ == '__main__':
+    pass

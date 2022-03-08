@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 class ServerDB:
+    """Класс - описывает хранение данных на сервере"""
     Base = declarative_base()
 
     class AllUsers(Base):
@@ -88,6 +89,7 @@ class ServerDB:
     def user_login(self, username, ip_address, port, pubkey=None):
         """
         Записывает в базу факт входа пользователя. Обновляет публичный ключ пользователя, при его изменении
+
         :param username: имя пользователя
         :param ip_address: ip-адрес ПК, с которого подключается пользователь
         :param port: порт
@@ -115,6 +117,7 @@ class ServerDB:
     def user_logout(self, username):
         """
         Фиксирует отключение пользователя. Удаляет пользователя из таблицы активных пользователей
+
         :param username: имя пользователя
         :return: None
         """
@@ -127,6 +130,7 @@ class ServerDB:
     def users_list(self):
         """
         Формирует список зарегистрированных пользователей и время их последнего входа
+
         :return: список кортежей (имя пользователя, время последнего входа)
         """
         query = self.session.query(
@@ -138,6 +142,7 @@ class ServerDB:
     def active_users_list(self):
         """
         Формирует список активных пользователей
+
         :return: список кортежей (имя пользователя, ip, порт, время входа)
         """
         query = self.session.query(
@@ -151,6 +156,7 @@ class ServerDB:
     def user_login_history(self, username=None):
         """
         Формирует историю входов пользователей. Если передано имя пользователя, то историю данного пользователя
+
         :param username: имя пользователя
         :return: список портежей (имя пользователя, ip, порт, время подключения)
         """
@@ -169,6 +175,7 @@ class ServerDB:
     def process_message(self, sender, recipient):
         """
         Записывает в таблицу статистики факт передачи сообщения
+
         :param sender: имя отправителя
         :param recipient: имя получателя
         :return: None
@@ -186,6 +193,7 @@ class ServerDB:
     def add_contact(self, user, contact):
         """
         Добавляет контакт для пользователя
+
         :param user: имя пользователя
         :param contact: имя добавляемого контакта
         :return: None
@@ -203,6 +211,7 @@ class ServerDB:
     def remove_contact(self, user, contact):
         """
         Удаляет контакт у пользователя
+
         :param user: имя пользователя
         :param contact: имя удаляемого контакта
         :return: None
@@ -223,6 +232,7 @@ class ServerDB:
     def get_contacts(self, username):
         """
         Формирует список контактов пользователя
+
         :param username: имя пользователя
         :return: список контактов
         """
@@ -237,6 +247,7 @@ class ServerDB:
     def message_statistic(self):
         """
         Формирует статистику сообщений
+
         :return: Список кортежей (имя пользователя, время подключения, количество отправленных сообщений,
         количество принятых сообщений)
         """
@@ -251,6 +262,7 @@ class ServerDB:
     def add_user(self, username, password):
         """
         Регистрация пользователя. Создает запись в таблице известных пользователей и таблице статистики сообщений
+
         :param username: имя пользователя
         :param password: хэш пароля
         :return: None
@@ -266,6 +278,7 @@ class ServerDB:
     def remove_user(self, username):
         """
         Удаление пользователя
+
         :param username: имя пользователя
         :return: None
         """
@@ -281,6 +294,7 @@ class ServerDB:
     def get_password(self, username):
         """
         Получает из базы хэш пароля пользователя
+
         :param username: имя пользователя
         :return: хэш пароля
         """
@@ -290,6 +304,7 @@ class ServerDB:
     def get_public_key(self, username):
         """
         Получает из базы публичный ключ пользователя
+
         :param username: имя пользователя
         :return: публичный ключ
         """
@@ -299,6 +314,7 @@ class ServerDB:
     def check_user(self, username):
         """
         Проверяет существование пользователя
+
         :param username: имя пользователя
         :return: True - пользователь существует, False - пользователь не зарегистрирован
         """

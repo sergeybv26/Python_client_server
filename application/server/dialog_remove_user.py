@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QApplicatio
 
 
 class DeleteUserDialog(QDialog):
+    """Класс - формирует окно удаления пользователя"""
     def __init__(self, database, server):
         super().__init__()
         self.database = database
@@ -39,6 +40,7 @@ class DeleteUserDialog(QDialog):
     def all_users_fill(self):
         """
         Заполняет список пользователей
+
         :return: None
         """
         self.selector.addItems([user[0] for user in self.database.users_list()])
@@ -46,6 +48,7 @@ class DeleteUserDialog(QDialog):
     def remove_user(self):
         """
         Обрабатывает удаление пользователя
+
         :return: None
         """
         self.database.remove_user(self.selector.currentText())

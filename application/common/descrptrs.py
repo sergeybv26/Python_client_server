@@ -8,6 +8,7 @@ SERVER_LOGGER = logging.getLogger('server')
 
 
 class Port:
+    """Дескриптор для описания порта сервера"""
     def __set__(self, instance, value):
         if not 1023 < value < 65536:
             SERVER_LOGGER.critical(f'Попытка запуска сервера с неподходящим номером порта '

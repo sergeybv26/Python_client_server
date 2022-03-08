@@ -42,6 +42,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
     def init_socket(self):
         """
         Инициализирует сокет
+
         :return: None
         """
         self.logger.info(f'Запущен сервер. Порт для подключений: {self.port}.'
@@ -58,6 +59,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
     def run(self):
         """
         Основной цикл сервера
+
         :return: None
         """
         self.init_socket()
@@ -92,6 +94,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
     def remove_client(self, client):
         """
         Осуществляет обработку клиента, с которым прервалась связь или который передает сообщение о выходе
+
         :param client: сокет клиента
         :return: None
         """
@@ -107,6 +110,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
     def process_message(self, message):
         """
         Выполняет отправку сообщения определенному клиенту
+
         :param message: Сообщение в виде словаря
         :return: None
         """
@@ -132,6 +136,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
     def process_client_message(self, message, client):
         """
         Обрабатывает сообщения от клиентов.
+
         Если это сообщение о присутствии - проверяет корректность и отправляет ответ клиенту.
         Если это сообщение пользователям - проверяет корректность и добавляет в очередь
         :param message: сообщение от клиента
@@ -224,6 +229,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
     def user_authorization(self, message, sock):
         """
         Осуществляет авторизацию пользователей
+
         :param message: сообщение об авторизации от пользователя
         :param sock: сокет
         :return: None
@@ -292,6 +298,7 @@ class Server(threading.Thread, metaclass=ServerMaker):
     def service_update_lists(self):
         """
         Отправляет сообщение 205 клиентам о необходимости обновить справочники
+
         :return: None
         """
         for client in self.names:

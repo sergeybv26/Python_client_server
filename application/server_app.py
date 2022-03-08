@@ -20,6 +20,7 @@ from server.server_db import ServerDB
 def get_server_parameters(default_address, default_port):
     """
     Получает параметры работы сервера из командной строки
+
     :param default_address: IP адрес по умолчанию, который слушает сервер
     :param default_port: порт по умолчанию
     :return: кортеж - параметры работы сервера (IP адрес, порт, флаг работы без графической оболочки)
@@ -42,6 +43,7 @@ def get_server_parameters(default_address, default_port):
 def load_config():
     """
     Загружает конфигурацию сервера из ini файла, при наличии данных в файле. Иначе создает конфигурацию.
+
     :return: конфигурация сервера
     """
     config = configparser.ConfigParser()
@@ -62,6 +64,7 @@ def load_config():
 def start_server_gui(_database, _server, _config):
     """
     Осуществляет запуск графической оболочки сервера. При закрытии окон останавливает обработчик сообщений
+
     :param _database: экземпляр класса обработчика базы данных
     :param _server: экземпляр класса сервера
     :param _config: конфигурация сервера
@@ -77,6 +80,7 @@ def start_server_gui(_database, _server, _config):
 def main():
     """
     Основная функция сервера
+
     :return: None
     """
     config = load_config()

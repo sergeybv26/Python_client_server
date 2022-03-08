@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QDialog, QPushButton, QTableView
 
 
 class StatisticWindow(QDialog):
+    """Класс - формирует окно со статистикой пользователей"""
     def __init__(self, database):
         super().__init__()
         self.database = database
@@ -30,6 +31,7 @@ class StatisticWindow(QDialog):
     def create_stat_model(self):
         """
         Реализует заполнение таблицы со статистикой сообщений
+
         :return: None
         """
         statistics_list = self.database.message_statistic()
@@ -52,3 +54,7 @@ class StatisticWindow(QDialog):
         self.statistic_table.setModel(table)
         self.statistic_table.resizeColumnsToContents()
         self.statistic_table.resizeRowsToContents()
+
+
+if __name__ == '__main__':
+    pass

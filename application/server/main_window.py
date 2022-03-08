@@ -17,6 +17,7 @@ remove_window = None
 
 
 class MainWindow(QMainWindow):
+    """Класс - формирует главное окно приложения-сервера"""
     def __init__(self, database, server, config):
         super().__init__()
         self.database = database
@@ -70,6 +71,7 @@ class MainWindow(QMainWindow):
     def create_users_models(self):
         """
         Создает таблицу QModel для отображения в окне программы активных пользователей
+
         :return: None
         """
         users_list = self.database.active_users_list()
@@ -93,6 +95,7 @@ class MainWindow(QMainWindow):
     def show_statistics(self):
         """
         Формирует окно со статистикой клиентов
+
         :return: None
         """
         global statistic_window
@@ -102,6 +105,7 @@ class MainWindow(QMainWindow):
     def server_config(self):
         """
         Формирует окно конфигурации сервера
+
         :return: None
         """
         global config_window
@@ -110,6 +114,7 @@ class MainWindow(QMainWindow):
     def register_user(self):
         """
         Формирует окно регистрации пользователя
+
         :return: None
         """
         global register_window
@@ -119,6 +124,7 @@ class MainWindow(QMainWindow):
     def remove_user(self):
         """
         Формирует окно удаление пользователя
+
         :return: None
         """
         global remove_window

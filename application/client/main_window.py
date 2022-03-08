@@ -67,6 +67,7 @@ class ClientMainWindow(QMainWindow):
     def set_disabled_input(self):
         """
         Деактивирует поля ввода сообщения
+
         :return: None
         """
         self.ui.label_new_message.setText('Для выбора получателя дважды кликните на нем в окне контактов')
@@ -85,6 +86,7 @@ class ClientMainWindow(QMainWindow):
     def history_list_update(self):
         """
         Заполняет историю сообщений
+
         :return: None
         """
         list_messages = sorted(self.database.get_history(self.current_chat), key=lambda item: item[3])
@@ -118,6 +120,7 @@ class ClientMainWindow(QMainWindow):
     def select_active_user(self):
         """
         Обрабатывает двойной клик по контакту
+
         :return: None
         """
         self.current_chat = self.ui.list_contacts.currentIndex().data()
@@ -127,6 +130,7 @@ class ClientMainWindow(QMainWindow):
         """
         Устанавливает активного собеседника.
         Запрашивает публичный ключ пользователя и создает объект шифрования
+
         :return: None
         """
         try:
@@ -153,6 +157,7 @@ class ClientMainWindow(QMainWindow):
     def clients_list_update(self):
         """
         Обновляет список контактов
+
         :return: None
         """
         contacts_list = self.database.get_contacts()
@@ -166,6 +171,7 @@ class ClientMainWindow(QMainWindow):
     def add_contact_window(self):
         """
         Добавление контакта
+
         :return: None
         """
         global select_dialog
@@ -176,6 +182,7 @@ class ClientMainWindow(QMainWindow):
     def add_contact_action(self, item):
         """
         Обрабатывает добавление контакта: сообщает серверу, обновляют таблицу и список контактов
+
         :param item: Экземпляр класса окна добавления пользователя
         :return: None
         """
@@ -186,6 +193,7 @@ class ClientMainWindow(QMainWindow):
     def add_contact(self, new_contact):
         """
         Добавляет контакт в БД
+
         :param new_contact: Добавляемый контакт
         :return: None
         """
@@ -209,6 +217,7 @@ class ClientMainWindow(QMainWindow):
     def delete_contact_window(self):
         """
         Удаление контакта
+
         :return: None
         """
         global remove_dialog
@@ -219,6 +228,7 @@ class ClientMainWindow(QMainWindow):
     def delete_contact(self, item):
         """
         Обрабатывает удаление контакта. Сообщает на сервер и обновляет таблицу контактов
+
         :param item: экземпляр класса окна удаления контакта
         :return: None
         """
@@ -245,6 +255,7 @@ class ClientMainWindow(QMainWindow):
     def send_message(self):
         """
         Отправляет сообщение пользователю
+
         :return: None
         """
         message_text = self.ui.text_message.toPlainText()
@@ -276,6 +287,7 @@ class ClientMainWindow(QMainWindow):
         """
         Слот приема нового сообщения.
         Выполняет дешифровку поступаемых сообщений и их сохранение в БД в историю сообщений.
+
         :param message: сообщение
         :return: None
         """
@@ -313,6 +325,7 @@ class ClientMainWindow(QMainWindow):
     def connection_lost(self):
         """
         Слот потери соединения. Выдает сообщение об ошибке и завершает работу приложения
+
         :return: None
         """
         self.messages.warning(self, 'Сбой соединения', 'Потеряно соединение с сервером.')
@@ -322,6 +335,7 @@ class ClientMainWindow(QMainWindow):
     def signal_205(self):
         """
         Слот, который выполняет обновление базы данных по команде от сервера
+
         :return: None
         """
         if self.current_chat and not self.database.check_user(self.current_chat):
@@ -333,6 +347,7 @@ class ClientMainWindow(QMainWindow):
     def make_connection(self, trans_obj):
         """
         Создает соединение сигналов со слотами
+
         :param trans_obj: Экземпляр класса-транспорта клиента
         :return: None
         """

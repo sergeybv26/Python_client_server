@@ -1,10 +1,11 @@
 """
-Стартовый дмалог клиента с вводом имени пользователя
+Стартовый диалог клиента с вводом имени пользователя
 """
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, qApp, QApplication
 
 
 class UserNameDialog(QDialog):
+    """Стартовый диалог клиента с вводом имени пользователя"""
     def __init__(self):
         super().__init__()
         self.ok_pressed = False
@@ -42,6 +43,7 @@ class UserNameDialog(QDialog):
     def click(self):
         """
         Обрабатывает кнопку ОК. Если поле ввода не пустое устанавливает флаг и завершает приложение
+
         :return: None
         """
         if self.client_name.text():

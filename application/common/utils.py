@@ -16,6 +16,7 @@ from common.decos import log
 def send_message(sock, message):
     """
     Выполняет кодирование и отправку сообщения
+
     :param sock: сокет
     :param message: Отправляемое сообщение
     :return: None
@@ -32,6 +33,7 @@ def send_message(sock, message):
 def get_message(sock):
     """
     Принимает и декодирует сообщение. Если принят не словарь - выдает ошибку
+
     :param sock: сокет
     :return: словарь ответа
     """
@@ -55,6 +57,7 @@ def get_parameters(is_server=False):
     """
     Получает параметры IP адреса и порта из командной строки.
     Получает параметр клиента из командной строки
+
     :param is_server: Признак, указывающий, что это настройки для сервера
     :return: возвращает параметры
     """

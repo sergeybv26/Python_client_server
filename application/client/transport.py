@@ -56,6 +56,7 @@ class ClientTransport(threading.Thread, QObject):
         self.running = True
 
     def connection_init(self, address, port):
+        """Инициализирует соединение с сервером"""
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.transport.settimeout(5)
         connected = False  # Флаг успешного соединения
@@ -110,6 +111,7 @@ class ClientTransport(threading.Thread, QObject):
     def create_presence(self, pub_key):
         """
         Формирует запрос на сервер о присутствии клиента.
+
         :param pub_key: Публичный ключ
         """
 
@@ -128,6 +130,7 @@ class ClientTransport(threading.Thread, QObject):
     def process_answ(self, message):
         """
         Разбирает ответ от сервера. Формирует исключение при ошибке
+
         :param message: Сообщение от сервера
         :return: None
         """
@@ -155,6 +158,7 @@ class ClientTransport(threading.Thread, QObject):
     def contacts_list_request(self):
         """
         Функция запроса и обновления списка контактов для пользователя
+
         :return: None
         """
         LOGGER.debug(f'Запрос списка контактов для пользователя {self.username}')
@@ -177,6 +181,7 @@ class ClientTransport(threading.Thread, QObject):
     def user_list_request(self):
         """
         Запрашивает список известных пользователей и обновляет таблицу
+
         :return: None
         """
         LOGGER.debug(f'Запрос списка известных пользователей для {self.username}')
@@ -198,6 +203,7 @@ class ClientTransport(threading.Thread, QObject):
     def key_request(self, user):
         """
         Запрашивает с сервера публичный ключ пользователя
+
         :param user: имя пользователя
         :return: публичный ключ
         """
@@ -218,6 +224,7 @@ class ClientTransport(threading.Thread, QObject):
     def add_contact(self, contact):
         """
         Сообщает на сервер о добавлении нового контакта
+
         :param contact: имя добавляемого пользователя
         :return: None
         """
@@ -236,6 +243,7 @@ class ClientTransport(threading.Thread, QObject):
     def remove_contact(self, contact):
         """
         Удаляет пользователя из списка контактов
+
         :param contact: удаляемый контакт
         :return: None
         """
@@ -254,6 +262,7 @@ class ClientTransport(threading.Thread, QObject):
     def transport_shutdown(self):
         """
         Закрывает соединение. Отправляет сообщение на сервер о выходе
+
         :return: None
         """
         self.running = False
@@ -273,6 +282,7 @@ class ClientTransport(threading.Thread, QObject):
     def send_message(self, recipient, message):
         """
         Отправляет сообщение для пользователя на сервер
+
         :param recipient: Пользователь-получатель сообщения
         :param message: Сообщение
         :return: None

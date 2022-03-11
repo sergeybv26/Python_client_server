@@ -1,5 +1,5 @@
 """
-Программа-клиент. Объектно-ориентированный стиль
+Программа-клиент.
 """
 import argparse
 import logging
@@ -24,6 +24,7 @@ CLIENT_LOGGER = logging.getLogger('client')
 def check_client_parameters():
     """
     Выполняет проверку параметров клиента
+
     :return: Кортеж - параметры клиента
     """
     parser_param = argparse.ArgumentParser()
@@ -47,6 +48,7 @@ def check_client_parameters():
 
 
 if __name__ == '__main__':
+    """Осуществляет запуск приложения-клиента"""
     CLIENT_LOGGER.info('Запущено приложение')
 
     server_address, server_port, client_name, client_password = check_client_parameters()

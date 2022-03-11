@@ -12,6 +12,7 @@ from common.variables import SERVER_CONFIG
 
 
 class ConfigWindow(QDialog):
+    """Класс - формирует окно конфигурации сервера"""
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -83,6 +84,7 @@ class ConfigWindow(QDialog):
     def open_file_dialog(self):
         """
         Обрабатывает окно выбора папки
+
         :return: None
         """
         global dialog
@@ -95,6 +97,7 @@ class ConfigWindow(QDialog):
     def save_server_config(self):
         """
         Сохраняет настройки сервера
+
         :return: None
         """
         message = QMessageBox()

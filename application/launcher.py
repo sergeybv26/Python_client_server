@@ -26,3 +26,7 @@ while True:
         while PROCESS:
             VICTIM = PROCESS.pop()
             VICTIM.kill()
+
+
+if __name__ == '__main__':
+    pass

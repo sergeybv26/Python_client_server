@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QMessageBox
 
 
 class RegisterUser(QDialog):
+    """Класс - формирует окно регистрации пользователя"""
     def __init__(self, database, server):
         super().__init__()
         self.database = database
@@ -60,6 +61,7 @@ class RegisterUser(QDialog):
     def save_data(self):
         """
         Проверяет правильность ввода и сохраняет в базу данных нового пользователя
+
         :return: None
         """
         if not self.username.text():

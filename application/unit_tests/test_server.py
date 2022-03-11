@@ -28,6 +28,7 @@ class TestServer(unittest.TestCase):
     def test_def_process_client_message_ok(self):
         """
         Тест обработки корректного запроса
+
         :return:
         """
 
@@ -42,6 +43,7 @@ class TestServer(unittest.TestCase):
     def test_def_process_client_message_no_action(self):
         """
         Тест при отсутствии action в запросе
+
         :return:
         """
 
@@ -55,6 +57,7 @@ class TestServer(unittest.TestCase):
     def test_def_process_client_message_wrong_action(self):
         """
         Тест при не верном действии
+
         :return:
         """
 
@@ -69,6 +72,7 @@ class TestServer(unittest.TestCase):
     def test_def_process_client_message_no_time(self):
         """
         Тест при отсутствии времени в запросе
+
         :return:
         """
 
@@ -82,6 +86,7 @@ class TestServer(unittest.TestCase):
     def test_def_process_client_message_no_user(self):
         """
         Тест на отсутствие пользователя в запросе
+
         :return:
         """
 
@@ -93,6 +98,7 @@ class TestServer(unittest.TestCase):
     def test_def_process_client_message_wrong_user(self):
         """
         Тест на не корректного пользователя в запросе
+
         :return:
         """
 

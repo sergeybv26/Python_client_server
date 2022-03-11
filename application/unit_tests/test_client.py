@@ -25,6 +25,7 @@ class TestClient(unittest.TestCase):
     def test_def_create_presence(self):
         """
         Тест функции запроса на сервер
+
         :return:
         """
 
@@ -42,6 +43,7 @@ class TestClient(unittest.TestCase):
     def test_def_create_presence_instance(self):
         """
         Тест на корректность возвращаемого типа данных
+
         :return:
         """
 
@@ -50,6 +52,7 @@ class TestClient(unittest.TestCase):
     def test_process_answ_200(self):
         """
         Тест корректного разбора ответа 200
+
         :return:
         """
         self.assertEqual(process_answ({RESPONSE: 200}), '200 : OK')
@@ -57,6 +60,7 @@ class TestClient(unittest.TestCase):
     def test_process_answ_400(self):
         """
         Тест корректного разбора ответа 400
+
         :return:
         """
         self.assertEqual(process_answ({RESPONSE: 400, ERROR: 'Bad request'}), '400: Bad request')
@@ -64,6 +68,7 @@ class TestClient(unittest.TestCase):
     def test_process_answ_raise(self):
         """
         Тест не корректного разбора
+
         :return:
         """
         with self.assertRaises(ValueError):
@@ -72,6 +77,7 @@ class TestClient(unittest.TestCase):
     def test_process_answ_instance(self):
         """
         Тест типа возвращаемых данных
+
         :return:
         """
         self.assertIsInstance(process_answ({RESPONSE: 200}), str)
@@ -79,6 +85,7 @@ class TestClient(unittest.TestCase):
     def test_process_answ_key_error(self):
         """
         Тест на вызов ошибки при не корректных данных
+
         :return:
         """
         self.assertRaises(KeyError, process_answ, {RESPONSE: 300})

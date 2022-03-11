@@ -25,6 +25,7 @@ class TestSocket:
     def send(self, message_to_send):
         """
         Тестовая функция отправки. Кодирует сообщение и сохраняет то, что будет отправлено в сокет
+
         :param message_to_send: Отправляемое сообщение
         :return:
         """
@@ -36,6 +37,7 @@ class TestSocket:
     def recv(self, max_len):
         """
         Получение данных из сокета
+
         :return:
         """
 
@@ -64,6 +66,7 @@ class TestUtils(unittest.TestCase):
     def test_send_message(self):
         """
         Тест функции отправки
+
         :return:
         """
 
@@ -75,6 +78,7 @@ class TestUtils(unittest.TestCase):
     def test_send_message_raise(self):
         """
         Тест ошибки при не словаре на входе
+
         :return:
         """
 
@@ -84,6 +88,7 @@ class TestUtils(unittest.TestCase):
     def test_get_message_ok(self):
         """
         Тест приема сообщения с кодом 200
+
         :return:
         """
 
@@ -94,6 +99,7 @@ class TestUtils(unittest.TestCase):
     def test_get_message_err(self):
         """
         Тест приема сообщения с кодом 400
+
         :return:
         """
 
@@ -104,6 +110,7 @@ class TestUtils(unittest.TestCase):
     def test_get_tcp_parameters_address(self):
         """
         Тест получения адреса из командной строки
+
         :return:
         """
 
@@ -115,6 +122,7 @@ class TestUtils(unittest.TestCase):
     def test_get_tcp_parameters_port(self):
         """
         Тест получения порта из командной строки
+
         :return:
         """
 
@@ -125,6 +133,7 @@ class TestUtils(unittest.TestCase):
     def test_get_tcp_parameters_default_port(self):
         """
         Тест на установку порта по умолчанию
+
         :return:
         """
 
@@ -134,6 +143,7 @@ class TestUtils(unittest.TestCase):
     def test_get_tcp_parameters_default_address(self):
         """
         Тест получения адреса по умолчанию
+
         :return:
         """
 

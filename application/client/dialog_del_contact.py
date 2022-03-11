@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QApplicatio
 
 
 class DelContactDialog(QDialog):
+    """Создает диалог выбора контакта для удаления"""
     def __init__(self, database):
         super().__init__()
         self.database = database
